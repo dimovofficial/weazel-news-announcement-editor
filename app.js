@@ -49,7 +49,9 @@ async function request(params){
   let data=null;
   try{
     const r=await fetch("/api/editor?"+qs,{cache:"no-store",headers:{Accept:"application/json"}});
-    if(r.ok){const text=await r.text();try{data=JSON.parse(text)}catch{}}
+    const text=await r.text();
+    try{data=JSON.parse(text)}catch{}
+    if(!r.ok && data?.error) throw Error(data.error+(data.details?" | "+data.details:""));
   }catch{}
   if(data&&data.ok)return data;
   const fallback=await jsonp(params);
@@ -79,7 +81,7 @@ async function load(){
   }catch(e){
     status.classList.remove("ok");
     status.innerHTML="<i></i> Ошибка подключения";
-    sections.innerHTML='<div class="empty">Не удалось загрузить данные.<br><small style="display:block;margin-top:10px;color:#555">Проверьте публикацию Apps Script и доступ к таблице.</small></div>';
+    sections.innerHTML='<div class="empty">Не удалось загрузить данные.<br><small style="display:block;margin-top:10px;color:#777">'+esc(e&&e.message?e.message:"Неизвестная ошибка")+'</small></div>';
     console.error("Editor API:",e);
   }
 }
