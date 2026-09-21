@@ -1,9 +1,3 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/api/editor",
-      "destination": "https://script.google.com/macros/s/AKfycbxSMZBGKtXhfDb3QCuQ-YAEIWc0wTmvl2JbjFOQeor_auIwoHRiYlxsfTQVqdVLmHl_/exec"
-    }
-  ]
+  "cleanUrls": true
 }
