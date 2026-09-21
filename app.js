@@ -1,4 +1,4 @@
-const state={items:[],query:"",open:null};
+const state={items:[],query:"",open:null,total:0};
 const sections=document.getElementById("sections"),search=document.getElementById("search"),count=document.getElementById("count"),status=document.getElementById("status"),toast=document.getElementById("toast");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const key=x=>[x.sheetName,x.row,x.column].join(":");
@@ -6,12 +6,15 @@ function notify(t){toast.textContent=t;toast.classList.add("show");clearTimeout(
 async function copy(t){try{await navigator.clipboard.writeText(t)}catch{const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove()}notify("Скопировано")}
 async function load(){
   try{
-    const r=await fetch("/api/editor?action=index",{cache:"no-store",headers:{Accept:"application/json"}});
+    const q=search.value.trim();
+    const url="/api/editor?action=index"+(q?"&q="+encodeURIComponent(q):"");
+    const r=await fetch(url,{cache:"no-store",headers:{Accept:"application/json"}});
     const text=await r.text();
     let d;
     try{d=JSON.parse(text)}catch{throw Error("API вернул не JSON: "+text.slice(0,180))}
     if(!r.ok||!d.ok)throw Error(d.error||("HTTP "+r.status));
     state.items=d.items||[];
+    state.total=Number(d.total||state.items.length);
     status.classList.add("ok");
     status.innerHTML="<i></i> Данные синхронизированы";
     render();
@@ -24,11 +27,12 @@ async function load(){
 }
 function render(){
   const q=state.query.trim().toLowerCase();
-  const list=q?state.items.filter(x=>[x.sheetName,x.value,...(x.options||[])].join(" ").toLowerCase().includes(q)).slice(0,30):state.items;
-  count.textContent=q?list.length+" результатов":state.items.length+" позиций";
-  const groups=new Map();list.forEach(x=>{if(!groups.has(x.sheetName))groups.set(x.sheetName,[]);groups.get(x.sheetName).push(x)});
+  const list=state.items;
+  count.textContent=q?list.length+" результатов"+(state.total>list.length?" из "+state.total:""):state.total+" позиций";
+  const groups=new Map();
+  list.forEach(x=>{if(!groups.has(x.sheetName))groups.set(x.sheetName,[]);groups.get(x.sheetName).push(x)});
   sections.innerHTML="";
-  if(!groups.size){sections.innerHTML='<div class="empty">Ничего не найдено.</div>';return}
+  if(!groups.size){sections.innerHTML='<div class="empty">'+(q?"Ничего не найдено.":"Введите название товара для поиска.")+'</div>';return}
   for(const [name,items] of groups){
     const sec=document.createElement("section");sec.className="section";
     sec.innerHTML='<div class="sectionhead"><h2>'+esc(name)+'</h2><span>'+items.length+" ПОЗИЦИЙ</span></div>";
@@ -48,5 +52,5 @@ function render(){
     sec.appendChild(box);sections.appendChild(sec);
   }
 }
-search.addEventListener("input",e=>{state.query=e.target.value;state.open=null;render()});
-load();setInterval(load,30000);
+search.addEventListener("input",e=>{state.query=e.target.value;state.open=null;load()});
+load();
