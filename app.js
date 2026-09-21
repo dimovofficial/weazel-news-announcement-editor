@@ -10,7 +10,7 @@ async function load(){
     if(!r.ok)throw Error("HTTP "+r.status);
     const d=await r.json();if(!d.ok)throw Error(d.error||"API error");
     state.items=d.items||[];status.classList.add("ok");status.innerHTML="<i></i> Данные синхронизированы";render();
-  }catch(e){status.innerHTML="<i></i> Ошибка подключения";sections.innerHTML='<div class="empty">Не удалось загрузить данные.</div>';console.error(e)}
+  }catch(e){status.innerHTML="<i></i> Ошибка подключения";sections.innerHTML='<div class="empty">Не удалось загрузить данные.<br><small style="display:block;margin-top:10px;color:#555">Проверьте подключение к таблице и API.</small></div>';console.error("Editor API:",e)}
 }
 function render(){
   const q=state.query.trim().toLowerCase();
