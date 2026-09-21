@@ -24,3 +24,28 @@ main{width:min(1500px,calc(100% - 44px));margin:auto;padding:62px 0 90px}
 
 .category-group{width:100%;margin:18px 0 8px}.category-group:first-child{margin-top:0}.category-group-title{font:700 9px/1 Comfortaa,sans-serif;letter-spacing:.16em;color:#666;margin:0 0 9px 2px}.category-row{display:flex;flex-wrap:wrap;gap:10px}
 @media(max-width:700px){.category-row{gap:7px}.category-group{margin:14px 0 7px}.category-group-title{font-size:8px}}
+
+.sheet-section{overflow:visible}
+.sheet-wrap{overflow:auto;max-width:100%;background:#090909}
+.sheet-table{border-collapse:separate;border-spacing:0;min-width:max-content;width:100%;table-layout:fixed}
+.sheet-table th,.sheet-table td{border-right:1px solid #242424;border-bottom:1px solid #242424;height:54px;padding:0}
+.sheet-table thead th{position:sticky;top:0;z-index:3;background:#161616;color:#777;font:700 9px Comfortaa,sans-serif;letter-spacing:.12em;text-align:center;min-width:150px}
+.sheet-table thead .corner{position:sticky;left:0;z-index:5;min-width:52px;width:52px;background:#101010}
+.sheet-table .row-number{position:sticky;left:0;z-index:2;background:#101010;color:#555;font:600 9px Comfortaa,sans-serif;text-align:center;min-width:52px;width:52px}
+.sheet-table td{min-width:150px;width:150px;background:#0b0b0b;vertical-align:middle}
+.sheet-table td.populated{background:#0d0d0d}
+.sheet-table td.populated:hover{background:#151515;box-shadow:inset 0 0 0 1px #e21b23}
+.cell-copy,.cell-select{width:100%;height:100%;min-height:54px;border:0;background:transparent;color:#eee;padding:10px 12px;text-align:left;font:500 10px/1.35 Comfortaa,sans-serif;outline:0}
+.cell-copy{cursor:pointer}
+.cell-copy:hover{color:#fff}
+.cell-select{cursor:pointer;appearance:auto}
+.cell-select:focus{background:#171717;box-shadow:inset 0 0 0 1px #e21b23}
+.cell-select option{background:#111;color:#fff}
+.expired-value{text-decoration:line-through;color:#666}
+.sheet-table td.expired{background:#101010}
+.sheet-table td small{display:block;padding:0 12px 6px;color:#555;font-size:7px;text-transform:uppercase;letter-spacing:.1em}
+@media(max-width:700px){
+  .sheet-table thead th,.sheet-table td{min-width:170px;width:170px}
+  .sheet-table .row-number,.sheet-table thead .corner{min-width:42px;width:42px}
+  .cell-copy,.cell-select{font-size:9px}
+}
