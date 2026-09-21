@@ -6,14 +6,21 @@ function notify(t){toast.textContent=t;toast.classList.add("show");clearTimeout(
 async function copy(t){try{await navigator.clipboard.writeText(t)}catch{const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove()}notify("Скопировано")}
 async function load(){
   try{
-    let r=await fetch("/api/editor?action=index",{cache:"no-store",headers:{Accept:"application/json"}});
-    if(!r.ok){
-      r=await fetch("https://script.google.com/macros/s/AKfycbxQWBnu8p3C-fc0sSJOT-iJhtJhJdJuO_NBBCFjjGhyNPeHUUgsEASpMMdHzOlmdwvI/exec?action=index",{cache:"no-store",mode:"cors",headers:{Accept:"application/json"}});
-    }
-    if(!r.ok)throw Error("HTTP "+r.status);
-    const d=await r.json();if(!d.ok)throw Error(d.error||"API error");
-    state.items=d.items||[];status.classList.add("ok");status.innerHTML="<i></i> Данные синхронизированы";render();
-  }catch(e){status.innerHTML="<i></i> Ошибка подключения";sections.innerHTML='<div class="empty">Не удалось загрузить данные.<br><small style="display:block;margin-top:10px;color:#555">API редактора не отвечает. Обновите страницу через несколько секунд.</small></div>';console.error("Editor API:",e)}
+    const r=await fetch("/api/editor?action=index",{cache:"no-store",headers:{Accept:"application/json"}});
+    const text=await r.text();
+    let d;
+    try{d=JSON.parse(text)}catch{throw Error("API вернул не JSON: "+text.slice(0,180))}
+    if(!r.ok||!d.ok)throw Error(d.error||("HTTP "+r.status));
+    state.items=d.items||[];
+    status.classList.add("ok");
+    status.innerHTML="<i></i> Данные синхронизированы";
+    render();
+  }catch(e){
+    status.classList.remove("ok");
+    status.innerHTML="<i></i> Ошибка подключения";
+    sections.innerHTML='<div class="empty">Не удалось загрузить данные.<br><small style="display:block;margin-top:10px;color:#555">API редактора не отвечает. Обновите страницу через несколько секунд.</small></div>';
+    console.error("Editor API:",e);
+  }
 }
 function render(){
   const q=state.query.trim().toLowerCase();
