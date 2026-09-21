@@ -21,3 +21,6 @@ main{width:min(1500px,calc(100% - 44px));margin:auto;padding:62px 0 90px}
 .category:hover{border-color:#777;color:#fff;transform:translateY(-1px)}
 .category.active{background:#e21b23;border-color:#e21b23;color:#fff;box-shadow:0 8px 24px rgba(226,27,35,.18)}
 @media(max-width:700px){.categories{gap:7px}.category{padding:10px 12px;font-size:11px}}
+
+.category-group{width:100%;margin:18px 0 8px}.category-group:first-child{margin-top:0}.category-group-title{font:700 9px/1 Comfortaa,sans-serif;letter-spacing:.16em;color:#666;margin:0 0 9px 2px}.category-row{display:flex;flex-wrap:wrap;gap:10px}
+@media(max-width:700px){.category-row{gap:7px}.category-group{margin:14px 0 7px}.category-group-title{font-size:8px}}
