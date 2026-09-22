@@ -113,7 +113,7 @@ async function loadAll(){
     state.loading=state.categories.length;
     const results=await Promise.all(state.categories.map(async name=>{
       try{
-        const data=await request({action:"category",category:name,limit:"10000"});
+        const data=await request({action:"category",category:name});
         return [name,{items:normalizeItems(name,data),total:Number(data.categoryTotal||data.total||data.items?.length||0),error:null}];
       }catch(error){
         return [name,{items:[],total:0,error}];
