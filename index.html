@@ -78,12 +78,12 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <div id="staffList" class="stafflist"><div class="empty">Загрузка...</div></div>
 <div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="save" type="button" onclick="openStaffForm()">＋ Добавить сотрудника</button></div>
 </div></div></div>
-<div class="overlay" id="staffFormOverlay"><div class="modal loginbox"><div class="modalhead"><h3>Новый сотрудник</h3><button class="x" onclick="closeModal('staffFormOverlay')">×</button></div><form class="form" onsubmit="createStaff(event)">
+<div class="overlay" id="staffFormOverlay"><div class="modal loginbox"><div class="modalhead"><h3>Новый администратор</h3><button class="x" onclick="closeModal('staffFormOverlay')">×</button></div><form class="form" onsubmit="createStaff(event)">
 <div class="field"><label>Логин</label><input id="staffUsername" required></div>
 <div class="field"><label>Пароль</label><input id="staffPassword" type="password" required minlength="6"></div>
 <div class="field"><label>Имя</label><input id="staffDisplay" required></div>
 <div class="field"><label>Discord</label><input id="staffDiscord" required></div>
-<div class="field"><label>Роль</label><select id="staffRole"><option value="employee">Сотрудник</option><option value="creator">Creator</option><option value="admin">Admin</option><option value="senior_admin">Senior Admin</option></select></div>
+<div class="field"><label>Роль</label><select id="staffRole"><option value="admin">Admin</option><option value="senior_admin">Senior Admin</option></select></div>
 <div id="staffError" class="error"></div>
 <div class="actions"><button type="button" class="cancel" onclick="closeModal('staffFormOverlay')">Отмена</button><button class="save">Создать</button></div>
 </form></div></div>
@@ -222,16 +222,16 @@ window.openStaff=async()=>{
    }).join('');
  }catch(e){list.innerHTML='<div class="empty" style="color:#ff5961">Ошибка: '+esc(e.message)+'</div>'}
 };
-window.openStaffForm=()=>{if(!canEditUI())return;document.getElementById('staffError').textContent='';['staffUsername','staffPassword','staffDisplay','staffDiscord'].forEach(id=>document.getElementById(id).value='');document.getElementById('staffRole').value='employee';closeModal('staffOverlay');openModal('staffFormOverlay')};
+window.openStaffForm=()=>{if(!canEditUI())return;document.getElementById('staffError').textContent='';['staffUsername','staffPassword','staffDisplay','staffDiscord'].forEach(id=>document.getElementById(id).value='');document.getElementById('staffRole').value='admin';closeModal('staffOverlay');openModal('staffFormOverlay')};
 window.createStaff=async ev=>{
  ev.preventDefault();const err=document.getElementById('staffError');err.textContent='';
- try{const r=await withTimeout(sb.rpc('create_staff_account',{p_username:document.getElementById('staffUsername').value.trim(),p_password:document.getElementById('staffPassword').value,p_display_name:document.getElementById('staffDisplay').value.trim(),p_discord_name:document.getElementById('staffDiscord').value.trim(),p_role:document.getElementById('staffRole').value}),8000);if(r.error)throw new Error(r.error.message);closeModal('staffFormOverlay');await window.openStaff();toast('Сотрудник создан')}
+ try{const r=await withTimeout(sb.rpc('create_staff_account',{p_username:document.getElementById('staffUsername').value.trim(),p_password:document.getElementById('staffPassword').value,p_display_name:document.getElementById('staffDisplay').value.trim(),p_discord_name:document.getElementById('staffDiscord').value.trim(),p_role:document.getElementById('staffRole').value}),8000);if(r.error)throw new Error(r.error.message);closeModal('staffFormOverlay');await window.openStaff();toast('Администратор создан')}
  catch(e){err.textContent=e.message}
 };
 window.changeStaffRole=async(id,current)=>{
  if(!canManageStaff())return;
- const next=prompt('Введите новую роль: employee, admin или senior_admin',current);
- if(!next||!['employee','admin','senior_admin'].includes(next.trim().toLowerCase()))return;
+ const next=prompt('Введите новую роль: admin или senior_admin',current);
+ if(!next||!['admin','senior_admin'].includes(next.trim().toLowerCase()))return;
  try{const r=await withTimeout(sb.rpc('set_staff_role',{p_user_id:id,p_role:next.trim().toLowerCase()}),7000);if(r.error)throw new Error(r.error.message);await window.openStaff();toast('Роль изменена')}catch(e){toast(e.message)}
 };
 window.removeStaff=async id=>{
