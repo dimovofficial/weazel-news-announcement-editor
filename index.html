@@ -132,6 +132,107 @@ window.openModal=openModal;
 window.closeModal=closeModal;
 window.toggleDrawer=()=>document.getElementById('drawer').classList.toggle('open');
 
+
+const DEFAULT_SUBCATEGORIES=[
+ {id:'fallback-codes-mafia',category:'codes',name:'Мафии',sort_order:1},
+ {id:'fallback-codes-gangs',category:'codes',name:'Банды',sort_order:2},
+ {id:'fallback-codes-clubs',category:'codes',name:'Клубы',sort_order:3},
+ {id:'fallback-codes-families',category:'codes',name:'Семьи',sort_order:4},
+ {id:'fallback-codes-business',category:'codes',name:'Бизнес',sort_order:5},
+ {id:'fallback-codes-other',category:'codes',name:'Разное',sort_order:6},
+ ...CATEGORIES.filter(c=>c.slug!=='codes').map(c=>({id:'fallback-'+c.slug,category:c.slug,name:'Разное',sort_order:1}))
+];
+subcategories=[...DEFAULT_SUBCATEGORIES];
+
+function withTimeout(promise,ms){
+ return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Превышено время ожидания соединения')),ms))]);
+}
+function updateLimit(){
+ const el=document.getElementById('fBody'), out=document.getElementById('limit');
+ if(!el||!out)return;
+ const n=weightedLength(el.value);
+ out.textContent=n+' / 120';
+ out.style.color=n>120?'#ff5961':n>=105?'#ff9d00':'#69737c';
+}
+window.selectCategory=(slug)=>{
+ if(!CATEGORIES.some(c=>c.slug===slug))return;
+ activeCategory=slug;
+ document.getElementById('search').value='';
+ document.getElementById('search').dataset.letter='';
+ document.querySelectorAll('.letter').forEach((x,i)=>x.classList.toggle('active',i===0));
+ render();
+ window.scrollTo({top:0,behavior:'smooth'});
+};
+window.jumpSubsection=(id)=>{
+ const el=document.getElementById('sub-'+activeCategory+'-'+id)||document.getElementById('group-'+id);
+ if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+};
+window.copyBody=async(id)=>{
+ const t=templates.find(x=>String(x.id)===String(id));
+ if(!t||isExpired(t))return;
+ const text=String(t.body||'');
+ try{await navigator.clipboard.writeText(text)}
+ catch(e){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');ta.remove()}
+ toast('Текст шаблона скопирован');
+};
+function renderSearchResults(matches){
+ const el=document.getElementById('searchResults');if(!el)return;
+ if(!matches.length){el.classList.remove('open');el.innerHTML='';return}
+ const visible=matches.slice(0,10);
+ el.innerHTML=visible.map(t=>{
+   const cat=CATEGORIES.find(c=>c.slug===t.category),path=(cat?.name||t.category)+(t.group_name?' / '+t.group_name:'');
+   return '<button class="searchResult" onclick="openSearchResult('+t.id+',\''+String(t.category).replace(/'/g,"\\'")+'\')"><span class="srCode">'+esc(t.codeword||t.title||'Без названия')+'</span><span class="srBody">'+esc(t.body||'')+'</span><span class="srPath">'+esc(path)+'</span></button>';
+ }).join('');
+ if(matches.length>10)el.innerHTML+='<div class="searchEmpty">Показаны первые 10 результатов. Уточните запрос.</div>';
+ el.classList.add('open');
+}
+window.openSearchResult=(id,category)=>{
+ document.getElementById('searchResults').classList.remove('open');
+ document.getElementById('search').value='';document.getElementById('search').dataset.letter='';
+ activeCategory=category;render();
+ setTimeout(()=>{const row=document.getElementById('row-'+id);if(row)row.scrollIntoView({behavior:'smooth',block:'center'})},40);
+};
+function searchSectionHTML(cat,list){
+ let html='<section class="section"><div class="sectionhead"><div class="title"><h2>'+esc(cat.name)+'</h2></div><div class="sectionline"></div></div>';
+ if(cat.slug==='codes')return html+templateTable(list,'codes')+'</section>';
+ const grouped=new Map();
+ for(const t of list){const key=t.group_name||'Разное';if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(t)}
+ for(const [group,rows] of grouped)html+='<div class="subsection"><div class="subhead"><span style="font-size:19px;color:#fff">●</span><h3>'+esc(group)+'</h3><span>'+rows.length+' поз.</span></div>'+templateTable(rows,cat.slug)+'</div>';
+ return html+'</section>';
+}
+function canManageStaff(){return role==='creator'||role==='senior_admin'}
+window.openStaff=async()=>{
+ if(!canEditUI())return;
+ openModal('staffOverlay');
+ const list=document.getElementById('staffList');list.innerHTML='<div class="empty">Загрузка сотрудников...</div>';
+ try{
+   const r=await withTimeout(sb.rpc('list_admin_management'),7000);if(r.error)throw new Error(r.error.message);
+   const rows=Array.isArray(r.data)?r.data:[];
+   if(!rows.length){list.innerHTML='<div class="empty">Сотрудников пока нет.</div>';return}
+   list.innerHTML='<div class="staffrow head"><div>Имя</div><div>Логин</div><div>Discord</div><div>Роль</div></div>'+
+   rows.map(a=>{const rn=a.staff_role==='creator'?'Creator':a.staff_role==='senior_admin'?'Senior Admin':a.staff_role==='admin'?'Admin':'Сотрудник';
+     const c=(a.staff_role!=='creator'&&canManageStaff())?'<button class="cancel" style="padding:6px 8px;margin:3px" onclick="changeStaffRole(\''+a.user_id+'\',\''+a.staff_role+'\')">Роль</button><button class="danger" style="padding:6px 8px" onclick="removeStaff(\''+a.user_id+'\')">Удалить</button>':'';
+     return '<div class="staffrow"><div>'+esc(a.display_name||a.username)+'</div><div>'+esc(a.username||'—')+'</div><div>'+esc(a.discord_name||'—')+'</div><div class="staffrole">'+esc(rn)+' '+c+'</div></div>'
+   }).join('');
+ }catch(e){list.innerHTML='<div class="empty" style="color:#ff5961">Ошибка: '+esc(e.message)+'</div>'}
+};
+window.openStaffForm=()=>{if(!canEditUI())return;document.getElementById('staffError').textContent='';['staffUsername','staffPassword','staffDisplay','staffDiscord'].forEach(id=>document.getElementById(id).value='');document.getElementById('staffRole').value='employee';closeModal('staffOverlay');openModal('staffFormOverlay')};
+window.createStaff=async ev=>{
+ ev.preventDefault();const err=document.getElementById('staffError');err.textContent='';
+ try{const r=await withTimeout(sb.rpc('create_staff_account',{p_username:document.getElementById('staffUsername').value.trim(),p_password:document.getElementById('staffPassword').value,p_display_name:document.getElementById('staffDisplay').value.trim(),p_discord_name:document.getElementById('staffDiscord').value.trim(),p_role:document.getElementById('staffRole').value}),8000);if(r.error)throw new Error(r.error.message);closeModal('staffFormOverlay');await window.openStaff();toast('Сотрудник создан')}
+ catch(e){err.textContent=e.message}
+};
+window.changeStaffRole=async(id,current)=>{
+ if(!canManageStaff())return;
+ const next=prompt('Введите новую роль: employee, admin или senior_admin',current);
+ if(!next||!['employee','admin','senior_admin'].includes(next.trim().toLowerCase()))return;
+ try{const r=await withTimeout(sb.rpc('set_staff_role',{p_user_id:id,p_role:next.trim().toLowerCase()}),7000);if(r.error)throw new Error(r.error.message);await window.openStaff();toast('Роль изменена')}catch(e){toast(e.message)}
+};
+window.removeStaff=async id=>{
+ if(!canManageStaff()||!confirm('Удалить доступ этого сотрудника?'))return;
+ try{const r=await withTimeout(sb.rpc('remove_staff_account',{p_user_id:id}),7000);if(r.error)throw new Error(r.error.message);await window.openStaff();toast('Доступ удалён')}catch(e){toast(e.message)}
+};
+
 async function load(){
  const content=document.getElementById('content');
  const timeout=(ms)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error('Превышено время ожидания соединения с Supabase')),ms));
@@ -168,11 +269,15 @@ async function load(){
  render();
 }
 async function refreshRole(){
- const {data}=await sb.rpc('current_staff_role');
- role=data||null;
- const {data:session}=await sb.auth.getSession();
- user=session?.session?.user||null;
- renderUser();
+ try{
+   const sessionRes=await withTimeout(sb.auth.getSession(),5000);
+   user=sessionRes?.data?.session?.user||null;
+   if(user){
+     try{const roleRes=await withTimeout(sb.rpc('current_staff_role'),5000);role=roleRes?.error?null:(roleRes.data||null)}
+     catch(e){console.warn('Role load error',e);role=null}
+   }else{role=null;editorMode=false}
+ }catch(e){console.warn('Session load error',e);user=null;role=null;editorMode=false}
+ renderUser();render();
 }
 function renderUser(){
  const e=document.getElementById('user');
@@ -215,7 +320,7 @@ window.login=async(ev)=>{
  if(error){err.textContent=error.message;return}
  await refreshRole();closeModal('loginOverlay');toast('Вход выполнен');
 };
-sb.auth.onAuthStateChange(async()=>{await refreshRole()});
+sb.auth.onAuthStateChange(()=>{setTimeout(()=>refreshRole().catch(e=>console.error('Auth state refresh error',e)),0)});
 
 function sectionGroups(){
  const map=new Map(CATEGORIES.map(c=>[c.slug,[]]));
@@ -400,7 +505,12 @@ document.getElementById('search').addEventListener('input',render);
 document.getElementById('loginButton')?.addEventListener('click',()=>openModal('loginOverlay'));
 renderLetters();
 document.getElementById('fBody').addEventListener('input',updateLimit);
-(async()=>{await refreshRole();await load();fillCategories(activeCategory);fillGroups(categorySubcategories(activeCategory)[0]?.name||'');toggleCodeFields(activeCategory)})();
+render();
+fillCategories(activeCategory);
+fillGroups(categorySubcategories(activeCategory)[0]?.name||'');
+toggleCodeFields(activeCategory);
+load().catch(e=>console.error('Initial data load error',e));
+refreshRole().catch(e=>console.error('Initial auth load error',e));
 </script>
 </body>
 </html>
