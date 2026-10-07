@@ -147,7 +147,7 @@ function renderUser(){
  const e=document.getElementById('user');
  if(user){
    const editorLabel=editorMode?'Редактор ✓':'Редактор';
-   e.innerHTML='<span class="role">'+esc(role||'сотрудник')+'</span>'+(canEditUI()?'<button class="login" style="border-color:'+(editorMode?'#ff2632':'#333c46')+';background:'+(editorMode?'#18090c':'#080c10')+'" onclick="openEditorMenu()">'+editorLabel+'</button>':'')+'<button class="logout" onclick="logout()">Выйти</button>';
+   e.innerHTML='<span class="role">'+esc(role||'сотрудник')+'</span>'+(canEdit()?'<button class="login" style="border-color:'+(editorMode?'#ff2632':'#333c46')+';background:'+(editorMode?'#18090c':'#080c10')+'" onclick="openEditorMenu()">'+editorLabel+'</button>':'')+'<button class="logout" onclick="logout()">Выйти</button>';
  } else {
    e.innerHTML='<button class="login" onclick="openModal(\'loginOverlay\')">Вход для редакторов</button>';
  }
