@@ -1,30 +1,181 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WEAZEL NEWS | Редактор объявлений</title>
+<title>Weazel News | Помощник редактора</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css">
+<style>
+:root{--red:#ed1c24;--red2:#ff4b52;--bg:#08090b;--panel:#101216;--panel2:#15171c;--line:#292d35;--muted:#858b96;--text:#f4f4f5;--green:#38d996}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Comfortaa,system-ui,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.top{height:76px;border-bottom:1px solid #25282e;background:#090a0c;display:flex;align-items:center;padding:0 4.5%;position:sticky;top:0;z-index:50}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;background:var(--red);display:grid;place-items:center;font-size:13px;font-weight:700}.brand strong{font-size:13px;letter-spacing:1px}.brand small{display:block;color:#777d86;font-size:8px;letter-spacing:2px;margin-top:4px}.topnav{display:flex;margin-left:45px;gap:4px}.topnav button{border:0;background:transparent;color:#8f949d;padding:10px 13px;border-radius:6px;font-size:10px}.topnav button.active{background:#211014;color:#fff}.user{margin-left:auto;display:flex;align-items:center;gap:10px}.role{font-size:9px;color:#777}.login,.logout{border:1px solid #3a1b1f;background:#170d0f;color:#fff;padding:10px 13px;border-radius:6px;font-size:9px}.login{background:var(--red);border-color:var(--red)}
+.hero{padding:58px 7% 38px;background:radial-gradient(circle at 78% 15%,#341014 0,#131012 25%,#08090b 65%);border-bottom:1px solid #1f2228}.eyebrow{color:var(--red);font-size:9px;font-weight:700;letter-spacing:3px}.hero h1{font-size:clamp(38px,5.2vw,68px);line-height:1;margin:14px 0 13px;letter-spacing:-2px}.hero p{max-width:780px;color:#9da2ab;font-size:11px;line-height:1.8;margin:0}.toolbar{display:flex;gap:10px;margin-top:28px;max-width:1100px}.search{flex:1;background:#101216;border:1px solid #30343c;color:#fff;border-radius:7px;padding:14px 16px;outline:none;font-size:11px}.search:focus{border-color:#5a2429}.navbtn{background:#14161a;border:1px solid #30343b;color:#b8bdc5;border-radius:7px;padding:0 15px;font-size:10px}.navbtn:hover{border-color:#555}
+.main{max-width:1550px;margin:auto;padding:34px 7% 100px}.section{scroll-margin-top:95px;margin-bottom:50px}.sectionhead{display:flex;align-items:end;gap:16px;margin-bottom:15px}.sectionhead .title{min-width:190px}.sectionhead h2{font-size:25px;margin:5px 0 0}.sectionhead p{font-size:9px;color:#777d87;margin:0 0 3px}.sectionline{height:1px;background:linear-gradient(90deg,#343840,transparent);flex:1}.add{border:1px solid #5b2228;background:#1c0e10;color:#ff666c;border-radius:6px;padding:9px 12px;font-size:9px;font-weight:700;white-space:nowrap}.add:hover{background:#281114}
+.subsection{margin:26px 0 0}.subhead{display:flex;align-items:center;gap:10px;margin:0 0 8px}.subhead h3{margin:0;font-size:12px}.subhead span{color:#656b75;font-size:8px}.table{border:1px solid #24282f;border-radius:8px;overflow:hidden;background:#0d0f12}.row{display:grid;grid-template-columns:125px minmax(320px,1fr) 110px 170px 116px;min-height:55px;border-bottom:1px solid #20232a}.row:last-child{border-bottom:0}.cell{padding:12px 13px;display:flex;align-items:center;border-right:1px solid #1d2026;font-size:9px;color:#aeb3bc}.cell:last-child{border-right:0}.head{min-height:35px;background:#15171c;color:#6f7580;text-transform:uppercase;letter-spacing:1px;font-size:8px;font-weight:700}.code{font-weight:700;color:#fff}.body{color:#f0f1f3;line-height:1.55;cursor:pointer}.body:hover{background:#15181d}.meta{color:#8d939e}.copy{justify-content:center}.copy button{border:1px solid #30343c;background:#17191e;color:#dce0e5;border-radius:5px;padding:7px 8px;font-size:8px}.copy button:hover{border-color:#777}.expired .body{color:#ef4b53;cursor:default}.expired{background:#130b0d}.expired .copy{color:#d33d45;font-size:8px}
+.empty{padding:24px;text-align:center;color:#5e646e;font-size:9px}.hint{font-size:8px;color:#6f7580;margin-top:7px}.limit{font-size:9px;color:#777}.limit.ok{color:var(--green)}.limit.bad{color:#ff535b}
+.fab{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:40;width:45px;height:45px;border:1px solid #4d1e24;background:#151014;color:#ff6269;border-radius:50%;font-size:16px}.drawer{position:fixed;right:-360px;top:0;width:350px;height:100vh;background:#101216;border-left:1px solid #30343b;z-index:60;padding:24px 20px;transition:right .22s;box-shadow:-20px 0 50px #000b;overflow:auto}.drawer.open{right:0}.drawer h3{margin:0 0 5px;font-size:16px}.drawer p{color:#6e747e;font-size:9px}.close{float:right;background:none;border:0;color:#aaa;font-size:24px}.jump{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #20232a;color:#b3b8c0;padding:13px 3px;font-size:10px}.jump:hover{color:#fff}.jump b{color:#555;margin-right:9px}
+.overlay{position:fixed;inset:0;background:#000b;z-index:100;display:none;align-items:center;justify-content:center;padding:20px}.overlay.open{display:flex}.modal{width:min(620px,100%);max-height:92vh;overflow:auto;background:#111318;border:1px solid #333740;border-radius:10px;box-shadow:0 25px 90px #000}.modalhead{padding:18px 20px;border-bottom:1px solid #292d34;display:flex;justify-content:space-between}.modalhead h3{margin:0;font-size:15px}.x{background:none;border:0;color:#999;font-size:20px}.form{padding:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{margin-bottom:13px}.field.full{grid-column:1/-1}.field label{display:block;color:#8b919b;font-size:8px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;background:#0c0e11;border:1px solid #30343b;color:#fff;border-radius:6px;padding:11px;font-size:10px;outline:none}.field textarea{min-height:125px;resize:vertical;line-height:1.55}.field input:focus,.field textarea:focus,.field select:focus{border-color:#6a292f}.actions{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #292d34;padding-top:14px}.cancel{background:#17191e;border:1px solid #30343b;color:#bbb;padding:10px 14px;border-radius:6px;font-size:9px}.save{background:var(--red);border:1px solid var(--red);color:#fff;padding:10px 15px;border-radius:6px;font-size:9px;font-weight:700}.danger{background:#2a0d10;border:1px solid #64232a;color:#ff6970;padding:10px 14px;border-radius:6px;font-size:9px}.loginbox{width:min(410px,100%)}.error{color:#ff5961;font-size:9px;margin-top:8px;min-height:12px}
+.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,80px);background:#f5f5f5;color:#111;padding:11px 15px;border-radius:6px;font-size:9px;font-weight:700;z-index:200;transition:.2s}.toast.show{transform:translate(-50%,0)}
+@media(max-width:1000px){.top{padding:0 15px}.topnav{display:none}.role{display:none}.hero,.main{padding-left:18px;padding-right:18px}.row{grid-template-columns:90px 1fr 100px}.row .date,.row .contact{display:none}.grid{grid-template-columns:1fr}.fab{right:12px}.drawer{width:min(350px,92vw)}.sectionhead{align-items:center}.sectionhead .title{min-width:0}.sectionline{display:none}}
+</style>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand"><div class="mark">WN</div><div><strong>WEAZEL NEWS</strong><small>РЕДАКТОР ОБЪЯВЛЕНИЙ</small></div></div>
-  <div id="status"><i></i> Подключение...</div>
+<header class="top">
+  <div class="brand"><div class="mark">WN</div><div><strong>WEAZEL NEWS</strong><small>ПОМОЩНИК РЕДАКТОРА</small></div></div>
+  <nav class="topnav"><button class="active">Кодовые</button></nav>
+  <div class="user" id="user"></div>
 </header>
-<main>
-  <section class="hero">
-    <div class="eyebrow">WEAZEL NEWS • ВНУТРЕННИЙ ИНСТРУМЕНТ</div>
-    <h1>Редактор объявлений</h1>
-    <p>Все данные из рабочей таблицы собраны в одном интерфейсе. Используйте поиск по всей таблице или перейдите к нужному разделу.</p>
-    <nav id="categories" class="categories" aria-label="Категории"></nav>
-    <div class="searchbox"><span>⌕</span><input id="search" autocomplete="off" placeholder="Поиск по всей таблице: кодовые, шаблоны, товары, транспорт..."><output id="count"></output></div>
-  </section>
-  <div id="sections"><div class="loading">Загрузка данных...</div></div>
-</main>
-<div id="toast"></div>
-<script src="/app.js"></script>
+
+<section class="hero">
+  <div class="eyebrow">WEAZEL NEWS • ВНУТРЕННИЙ ИНСТРУМЕНТ</div>
+  <h1>Кодовые</h1>
+  <p>Рабочие кодовые слова и готовые объявления. Нажмите на текст шаблона, чтобы скопировать только его содержимое.</p>
+  <div class="toolbar"><input id="search" class="search" placeholder="Поиск по кодовому, шаблону, связи или группе..."><button class="navbtn" onclick="toggleDrawer()">☰ Разделы</button></div>
+</section>
+
+<main class="main" id="content"><div class="empty">Загрузка шаблонов...</div></main>
+
+<button class="fab" onclick="toggleDrawer()">☰</button>
+<aside class="drawer" id="drawer"><button class="close" onclick="toggleDrawer()">×</button><h3>Быстрая навигация</h3><p>Переход к разделу без прокрутки всей страницы.</p><div id="jumps"></div></aside>
+
+<div class="overlay" id="loginOverlay"><div class="modal loginbox"><div class="modalhead"><h3>Вход для редакторов</h3><button class="x" onclick="closeModal('loginOverlay')">×</button></div><form class="form" onsubmit="login(event)"><div class="field"><label>E-mail</label><input id="loginEmail" type="email" required autocomplete="username"></div><div class="field"><label>Пароль</label><input id="loginPassword" type="password" required autocomplete="current-password"></div><div id="loginError" class="error"></div><div class="actions"><button type="button" class="cancel" onclick="closeModal('loginOverlay')">Отмена</button><button class="save">Войти</button></div></form></div></div>
+
+<div class="overlay" id="editOverlay"><div class="modal"><div class="modalhead"><h3 id="modalTitle">Добавить шаблон</h3><button class="x" onclick="closeModal('editOverlay')">×</button></div><form class="form" onsubmit="saveTemplate(event)">
+<input type="hidden" id="editId">
+<div class="grid">
+<div class="field"><label>Раздел</label><select id="fCategory"></select></div>
+<div class="field"><label>Подраздел / группа</label><input id="fGroup" placeholder="Например: Мафия 1"></div>
+<div class="field"><label>Кодовое слово</label><input id="fCodeword"></div>
+<div class="field"><label>Заголовок</label><input id="fTitle" required></div>
+<div class="field full"><label>Текст шаблона, максимум 120</label><textarea id="fBody" required oninput="updateLimit()"></textarea><div id="limit" class="limit">0 / 120</div><div class="hint">Разрешены только согласованные эмодзи. Вес каждого эмодзи учитывается отдельно.</div></div>
+<div class="field"><label>Срок действия</label><input id="fExpires" type="date"></div>
+<div class="field"><label>Связь</label><input id="fContact"></div>
+<div class="field"><label><input id="fPermanent" type="checkbox" style="width:auto"> Бессрочный</label></div>
+</div>
+<div class="error" id="saveError"></div>
+<div class="actions"><button type="button" class="danger" id="deleteBtn" onclick="deleteTemplate()" style="display:none;margin-right:auto">Удалить</button><button type="button" class="cancel" onclick="closeModal('editOverlay')">Отмена</button><button class="save">Сохранить</button></div>
+</form></div></div>
+
+<div class="toast" id="toast">Скопировано</div>
+
+<script type="module">
+import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const SUPABASE_URL='https://niejderxjbawkbqovqfx.supabase.co';
+const SUPABASE_KEY='sb_publishable_d_G3NWd7JHdhYsKuteqbAw_KT0QBPJZ';
+const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const CATEGORIES=[
+ {slug:'codes',name:'Кодовые',sort:1},
+ {slug:'current',name:'Актуальные шаблоны',sort:2},
+ {slug:'bags',name:'Сумки / Рюкзаки',sort:3},
+ {slug:'transport',name:'Транспорт',sort:4},
+ {slug:'misc',name:'Разное',sort:5},
+ {slug:'clothing',name:'Одежда',sort:6},
+ {slug:'masks',name:'Маски',sort:7},
+ {slug:'fishing',name:'Рыбалка / Охота',sort:8},
+ {slug:'rejections',name:'Отклонения',sort:9}
+];
+const ONE=new Set('♿ ⛔ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ⛎ ⏩ ⏪ ⏫ ⏬ ⏸️ ➕ ➖ ➗ ❓ ❔ ❕ ⭕ ✅ ❌ ❎ ➰ ➿ ⚫ ⚪ ⬛ ⬜ ◾ ◽ ⛲ ⛺ ⛽ ⚓ ⛵ ⌛ ⏳ ⌚ ⏰ ⭐ ⛅ ⛈️ ☔ ⚡ ⛄ ⛪ ⚽ ⚾ ⛳ ☕ ✊ ✋ ✨'.split(' '));
+const TWO=new Set('⚠️ ☢️ ☣️ ⬆️ ↗️ ➡️ ↘️ ↙️ ⬅️ ↖️ ↩️ ↪️ ⤴️ ⤵️ ⚛️ ✡️ ☸️ ☯️ ✝️ ☦️ ☪️ ☮️ ▶️ ⏭️ ⏯️ ◀️ ⏹️ ⏺️ ⏏️ ✖️ ♾️ ❗️ 〰️ ⚕️ ♻️ ⚜️ ☑️ ✔️ 〽️ ✳️ ✴️ Ⓜ️ ㊗️ ㊙️ ◼️ ◻️ ☎️ ✉️ ✏️ ✒️ ✂️ ⛏️ ⚒️ ⚔️ ⚙️ ⚖️ ⛓️ ⚗️ ⚰️ ⚱️ ⛰️ ⛩️ ♨️ ⛴️ ✈️ ⏱️ ⏲️ ☀️ ☁️ ⛈️ ☂️ ⛱️ ❄️ ☃️ ☄️ ⛸️ ♟️ ⛷️ ⛹️ ☘️ ✌️ ☝️ ✍️ ☹️ ☠️ ❤️ ❣️'.split(' '));
+const THREE=new Set('⛑️ 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ #️⃣ *️⃣'.split(' '));
+let templates=[], role=null, user=null, editingId=null;
+
+function weightedLength(text){
+ let s=String(text||''),total=[...s].length;
+ for(const [set,w] of [[ONE,1],[TWO,2],[THREE,3]]){
+  for(const token of set){let count=0,at=0;while((at=s.indexOf(token,at))!==-1){count++;at+=token.length}total-=count*[...token].length;total+=count*w;s=s.split(token).join('')}
+ }
+ return total;
+}
+function validEmoji(text){const allowed=new Set([...ONE,...TWO,...THREE]);let stripped=text;for(const token of [...allowed].sort((a,b)=>b.length-a.length))stripped=stripped.split(token).join('');return /[\p{Extended_Pictographic}]/u.test(stripped)?[...stripped].find(ch=>/\p{Extended_Pictographic}/u.test(ch)):null}
+function isExpired(t){return !t.permanent && t.expires_on && new Date(t.expires_on+'T23:59:59')<new Date()}
+function canEdit(){return ['creator','admin','senior_admin'].includes(role)}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1100)}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+window.closeModal=closeModal;
+window.toggleDrawer=()=>document.getElementById('drawer').classList.toggle('open');
+
+async function load(){
+ const {data,error}=await sb.rpc('editor_templates',{p_search:null,p_category:null});
+ if(error){document.getElementById('content').innerHTML='<div class="empty">Не удалось загрузить шаблоны.<br>'+esc(error.message)+'</div>';return}
+ templates=Array.isArray(data)?data:[];render();
+}
+async function refreshRole(){
+ const {data}=await sb.rpc('current_staff_role');
+ role=data||null;
+ const {data:session}=await sb.auth.getSession();
+ user=session?.session?.user||null;
+ renderUser();
+}
+function renderUser(){
+ const e=document.getElementById('user');
+ if(user){e.innerHTML='<span class="role">'+esc(role||'сотрудник')+'</span><button class="logout" onclick="logout()">Выйти</button>'}
+ else e.innerHTML='<button class="login" onclick="openModal(\'loginOverlay\')">Вход для редакторов</button>';
+}
+window.logout=async()=>{await sb.auth.signOut();user=null;role=null;renderUser();render();toast('Вы вышли')};
+window.login=async(ev)=>{
+ ev.preventDefault();const err=document.getElementById('loginError');err.textContent='';
+ const {error}=await sb.auth.signInWithPassword({email:document.getElementById('loginEmail').value,password:document.getElementById('loginPassword').value});
+ if(error){err.textContent=error.message;return}
+ await refreshRole();closeModal('loginOverlay');toast('Вход выполнен');
+};
+sb.auth.onAuthStateChange(async()=>{await refreshRole()});
+
+function sectionGroups(){
+ const map=new Map(CATEGORIES.map(c=>[c.slug,[]]));
+ for(const t of templates){if(map.has(t.category))map.get(t.category).push(t)}
+ return map;
+}
+function render(){
+ const q=document.getElementById('search').value.trim().toLowerCase();
+ const map=sectionGroups(),out=[];
+ document.getElementById('jumps').innerHTML=CATEGORIES.filter(c=>c.slug==='codes').map((c,i)=>'<button class="jump" onclick="document.getElementById(\'sec-codes\').scrollIntoView({behavior:\'smooth\'});toggleDrawer()"><b>01</b>'+esc(c.name)+'</button>').join('');
+ const codes=map.get('codes')||[];
+ const filtered=codes.filter(t=>!q||[t.codeword,t.title,t.body,t.client_contact,t.group_name].join(' ').toLowerCase().includes(q));
+ out.push(sectionHTML(CATEGORIES[0],filtered));
+ document.getElementById('content').innerHTML=out.join('');
+}
+function sectionHTML(cat,items){
+ const groups=new Map();
+ items.forEach(t=>{const g=t.group_name?.trim()||'Без подраздела';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(t)});
+ let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><div class="eyebrow">РАЗДЕЛ 01</div><h2>'+esc(cat.name)+'</h2><p>Активные кодовые слова и готовые тексты</p></div><div class="sectionline"></div>'+(canEdit()?'<button class="add" onclick="openNew(\'codes\')">＋ Добавить шаблон</button>':'')+'</div>';
+ if(!items.length)html+='<div class="table"><div class="empty">Пока нет шаблонов</div></div>';
+ for(const [g,list] of groups){html+='<div class="subsection"><div class="subhead"><h3>'+esc(g)+'</h3><span>'+list.length+' поз.</span></div><div class="table"><div class="row head"><div class="cell">КОДОВОЕ</div><div class="cell">ШАБЛОН</div><div class="cell">СРОК</div><div class="cell">СВЯЗЬ</div><div class="cell">ДЕЙСТВИЕ</div></div>';
+ list.forEach(t=>{const exp=isExpired(t);html+='<div class="row '+(exp?'expired':'')+'"><div class="cell code">'+esc(t.codeword||t.title)+'</div><div class="cell body" '+(!exp?'onclick="copyBody('+t.id+')"':'')+'>'+esc(exp?'Кодовое слово деактивировано':t.body)+'</div><div class="cell meta date">'+(t.permanent?'БЕССРОЧНО':esc(t.expires_on||'—'))+'</div><div class="cell meta contact">'+esc(t.client_contact||'—')+'</div><div class="cell copy">'+(exp?'<span>● Деактивировано</span>':'<button onclick="copyBody('+t.id+')">Копировать</button>')+(canEdit()&&!exp?'<button style="margin-left:5px" onclick="openEdit('+t.id+')">Изм.</button>':'')+'</div></div>'});
+ html+='</div></div>'}
+ return html+'</section>';
+}
+window.copyBody=async id=>{const t=templates.find(x=>x.id===id);if(!t||isExpired(t))return;await navigator.clipboard.writeText(t.body||'');toast('Текст скопирован')};
+window.openNew=(cat)=>{
+ editingId=null;document.getElementById('modalTitle').textContent='Добавить шаблон';document.getElementById('editId').value='';
+ fillCategories(cat);['fGroup','fCodeword','fTitle','fBody','fExpires','fContact'].forEach(id=>document.getElementById(id).value='');document.getElementById('fPermanent').checked=false;document.getElementById('deleteBtn').style.display='none';document.getElementById('saveError').textContent='';updateLimit();openModal('editOverlay')
+};
+window.openEdit=id=>{
+ const t=templates.find(x=>x.id===id);if(!t||!canEdit())return;editingId=id;document.getElementById('modalTitle').textContent='Изменить шаблон';document.getElementById('editId').value=id;fillCategories(t.category);document.getElementById('fGroup').value=t.group_name||'';document.getElementById('fCodeword').value=t.codeword||'';document.getElementById('fTitle').value=t.title||'';document.getElementById('fBody').value=t.body||'';document.getElementById('fExpires').value=t.expires_on||'';document.getElementById('fContact').value=t.client_contact||'';document.getElementById('fPermanent').checked=!!t.permanent;document.getElementById('deleteBtn').style.display='block';document.getElementById('saveError').textContent='';updateLimit();openModal('editOverlay')
+};
+function fillCategories(selected){document.getElementById('fCategory').innerHTML=CATEGORIES.map(c=>'<option value="'+c.slug+'" '+(c.slug===selected?'selected':'')+'>'+esc(c.name)+'</option>').join('')}
+window.updateLimit=()=>{const n=weightedLength(document.getElementById('fBody').value),e=document.getElementById('limit');e.textContent=n+' / 120';e.className='limit '+(n>120?'bad':'ok')};
+window.saveTemplate=async ev=>{
+ ev.preventDefault();const body=document.getElementById('fBody').value,n=weightedLength(body),bad=validEmoji(body),err=document.getElementById('saveError');err.textContent='';
+ if(n>120){err.textContent='Текст превышает лимит 120 символов: '+n+' / 120';return}
+ if(bad){err.textContent='Использован недопустимый эмодзи: '+bad;return}
+ const args={p_template_id:editingId,p_category:document.getElementById('fCategory').value,p_title:document.getElementById('fTitle').value,p_codeword:document.getElementById('fCodeword').value,p_body:body,p_expires_on:document.getElementById('fExpires').value||null,p_client_contact:document.getElementById('fContact').value,p_group_name:document.getElementById('fGroup').value,p_permanent:document.getElementById('fPermanent').checked,p_variants:[],p_sort_order:0};
+ const {error}=await sb.rpc('editor_save_template',args);if(error){err.textContent=error.message;return}
+ closeModal('editOverlay');await load();toast(editingId?'Шаблон изменён':'Шаблон добавлен');
+};
+window.deleteTemplate=async()=>{
+ if(!editingId||!confirm('Удалить этот шаблон?'))return;
+ const {error}=await sb.rpc('editor_delete_template',{p_template_id:editingId});if(error){document.getElementById('saveError').textContent=error.message;return}
+ closeModal('editOverlay');await load();toast('Шаблон удалён');
+};
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('fBody').addEventListener('input',updateLimit);
+(async()=>{await refreshRole();await load()})();
+</script>
 </body>
 </html>
