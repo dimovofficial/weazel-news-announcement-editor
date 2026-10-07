@@ -363,4 +363,16 @@ window.saveTemplate=async ev=>{
  if(error){err.textContent=error.message;return}
  closeModal('editOverlay');await load();toast(editingId?'Шаблон изменён':'Шаблон добавлен');
 };
-
+window.deleteTemplate=async()=>{
+ if(!editingId||!confirm('Удалить этот шаблон?'))return;
+ const {error}=await sb.rpc('editor_delete_template',{p_template_id:editingId});if(error){document.getElementById('saveError').textContent=error.message;return}
+ closeModal('editOverlay');await load();toast('Шаблон удалён');
+};
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('loginButton')?.addEventListener('click',()=>openModal('loginOverlay'));
+renderLetters();
+document.getElementById('fBody').addEventListener('input',updateLimit);
+(async()=>{fillGroups('Разное');await refreshRole();await load()})();
+</script>
+</body>
+</html>
