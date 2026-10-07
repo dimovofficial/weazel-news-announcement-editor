@@ -133,15 +133,21 @@ window.closeModal=closeModal;
 window.toggleDrawer=()=>document.getElementById('drawer').classList.toggle('open');
 
 async function load(){
- const [tplRes,subRes]=await Promise.all([
-   sb.rpc('editor_templates',{p_search:null,p_category:null}),
-   sb.rpc('editor_subcategories',{p_category:null})
- ]);
- if(tplRes.error){document.getElementById('content').innerHTML='<div class="empty">Не удалось загрузить шаблоны.<br>'+esc(tplRes.error.message)+'</div>';return}
- if(subRes.error){document.getElementById('content').innerHTML='<div class="empty">Не удалось загрузить подразделы.<br>'+esc(subRes.error.message)+'</div>';return}
- templates=Array.isArray(tplRes.data)?tplRes.data:[];
- subcategories=Array.isArray(subRes.data)?subRes.data:[];
- render();
+ const content=document.getElementById('content');
+ try{
+   const [tplRes,subRes]=await Promise.all([
+     sb.rpc('editor_templates',{p_search:null,p_category:null}),
+     sb.rpc('editor_subcategories',{p_category:null})
+   ]);
+   if(tplRes.error)throw new Error('Шаблоны: '+tplRes.error.message);
+   if(subRes.error)throw new Error('Подразделы: '+subRes.error.message);
+   templates=Array.isArray(tplRes.data)?tplRes.data:(tplRes.data==null?[]:[...tplRes.data]);
+   subcategories=Array.isArray(subRes.data)?subRes.data:(subRes.data==null?[]:[...subRes.data]);
+   render();
+ }catch(error){
+   console.error('Editor load error',error);
+   content.innerHTML='<div class="empty">Не удалось загрузить данные.<br>'+esc(error?.message||error||'Неизвестная ошибка')+'</div>';
+ }
 }
 async function refreshRole(){
  const {data}=await sb.rpc('current_staff_role');
