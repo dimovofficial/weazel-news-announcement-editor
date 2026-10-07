@@ -19,7 +19,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .editorMenu{width:min(520px,100%)}.editorStatus{border:1px solid #2b333b;border-radius:8px;background:#070a0d;padding:16px;margin-bottom:14px}.editorStatus strong{display:block;font-size:13px;margin-bottom:6px}.editorStatus span{color:#7f8992;font-size:9px;line-height:1.5}.editorToggle{width:100%;border:1px solid #ff2632;background:linear-gradient(180deg,#ff1d2a,#d80915);color:#fff;border-radius:7px;padding:13px;font-size:10px;font-weight:700}.editorToggle.off{border-color:#343c45;background:#11161b;color:#e8edf1}.editorInfo{margin-top:10px;color:#69737c;font-size:8px;line-height:1.5}
 @media(max-width:1100px){.brand{width:160px}.brand>div:last-child{display:none}.topnav button{padding:11px 9px}.layout{grid-template-columns:1fr}.side{display:none}.heroStats{right:18px}.stat{min-width:110px;padding:7px 10px}}
 @media(max-width:800px){.top{height:62px;padding:0 10px}.brand{width:92px}.mark{width:74px;height:44px;font-size:15px}.mark:after{font-size:14px}.topnav{display:none}.user{margin-left:auto}.hero{padding:16px 16px 12px;min-height:190px}.hero h1{font-size:28px}.heroStats{position:relative!important;right:auto;bottom:auto;margin-top:13px;width:max-content;max-width:100%;overflow:auto}.stat{min-width:105px}.toolbar{top:62px;padding:10px 16px}.layout{padding:8px 10px 50px}.row{grid-template-columns:100px minmax(180px,1fr) 90px}.row .contact,.row .date{display:none}.subhead .add{padding:8px 9px}.grid{grid-template-columns:1fr}}
-</style>
+.toolbar.searchPinned{position:fixed;left:0;right:0;top:70px;z-index:95;padding:10px 32px;background:rgba(5,8,11,.98);border-bottom:1px solid #343d46;box-shadow:0 12px 28px #000b;backdrop-filter:blur(14px)}.toolbar.searchPinned .searchWrap{max-width:none}.toolbar.searchPinned .search{height:42px}.searchPinSpacer{display:none;height:66px}.searchPinSpacer.on{display:block}@media(max-width:800px){.toolbar.searchPinned{top:62px;padding:8px 10px}.searchPinSpacer.on{height:60px}}</style>
 </head>
 <body>
 <header class="top">
@@ -39,10 +39,10 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
     <div class="stat danger"><div class="statIcon">×</div><div><strong id="statExpired">0</strong><small>Деактивированы</small></div></div>
   </div>
 </section>
-<div class="toolbar">
+<div class="toolbar" id="searchToolbar">
   <div class="searchWrap"><span class="searchIcon">⌕</span><input id="search" class="search" autocomplete="off" spellcheck="false" placeholder="Поиск по кодовому слову или тексту шаблона..."></div>
   <div class="searchResults" id="searchResults"></div>
-</div>
+</div><div class="searchPinSpacer" id="searchPinSpacer"></div>
 
 <div class="layout"><main class="main" id="content"><div class="empty">Загрузка шаблонов...</div></main>
 <aside class="side">
@@ -547,6 +547,20 @@ window.deleteTemplate=async()=>{
  const {error}=await sb.rpc('editor_delete_template',{p_template_id:editingId});if(error){document.getElementById('saveError').textContent=error.message;return}
  closeModal('editOverlay');await load();toast('Шаблон удалён');
 };
+const searchToolbar=document.getElementById('searchToolbar');
+const searchPinSpacer=document.getElementById('searchPinSpacer');
+let searchPinTop=0;
+function updateSearchPin(){
+  if(!searchToolbar)return;
+  const headerH=window.innerWidth<=800?62:70;
+  if(!searchToolbar.classList.contains('searchPinned')) searchPinTop=searchToolbar.getBoundingClientRect().top+window.scrollY-headerH;
+  const pin=window.scrollY>searchPinTop;
+  searchToolbar.classList.toggle('searchPinned',pin);
+  searchPinSpacer.classList.toggle('on',pin);
+}
+window.addEventListener('scroll',updateSearchPin,{passive:true});
+window.addEventListener('resize',()=>{searchPinTop=0;updateSearchPin()});
+requestAnimationFrame(updateSearchPin);
 document.getElementById('search').addEventListener('input',render);
 document.getElementById('loginButton')?.addEventListener('click',()=>openModal('loginOverlay'));
 document.getElementById('fBody').addEventListener('input',updateLimit);
