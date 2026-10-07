@@ -67,7 +67,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <div class="field"><label>Логин</label><input id="staffUsername" required></div>
 <div class="field"><label>Пароль</label><input id="staffPassword" type="password" required minlength="6"></div>
 <div class="field"><label>Имя</label><input id="staffDisplay" required></div>
-<div class="field"><label>Discord</label><input id="staffDiscord"></div>
+<div class="field"><label>Discord</label><input id="staffDiscord" required></div>
 <div class="field"><label>Роль</label><select id="staffRole"><option value="employee">Сотрудник</option><option value="creator">Creator</option><option value="admin">Admin</option><option value="senior_admin">Senior Admin</option></select></div>
 <div id="staffError" class="error"></div>
 <div class="actions"><button type="button" class="cancel" onclick="closeModal('staffFormOverlay')">Отмена</button><button class="save">Создать</button></div>
@@ -211,7 +211,7 @@ window.openStaff=async()=>{if(!canEdit())return;openModal('staffOverlay');await 
 window.openStaffForm=()=>{document.getElementById('staffError').textContent='';document.getElementById('staffUsername').value='';document.getElementById('staffPassword').value='';document.getElementById('staffDisplay').value='';document.getElementById('staffDiscord').value='';document.getElementById('staffRole').value='employee';openModal('staffFormOverlay')};
 async function loadStaff(){
  const box=document.getElementById('staffList');box.innerHTML='<div class="empty">Загрузка...</div>';
- const {data,error}=await sb.rpc('list_admin_directory');
+ const {data,error}=await sb.rpc('list_admin_management');
  if(error){box.innerHTML='<div class="empty">'+esc(error.message)+'</div>';return}
  if(!data?.length){box.innerHTML='<div class="empty">Сотрудников пока нет</div>';return}
  box.innerHTML='<div class="staffrow head"><div>Имя</div><div>Discord</div><div>Логин</div><div>Роль</div></div>'+data.map(s=>'<div class="staffrow"><div>'+esc(s.display_name||'—')+(s.is_owner?' <b>OWNER</b>':'')+'</div><div>'+esc(s.discord_name||'—')+'</div><div>'+esc(s.username||'—')+'</div><div class="staffrole">'+esc(s.is_owner?'owner':(s.staff_role||'employee'))+'</div></div>').join('');
