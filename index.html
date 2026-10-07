@@ -29,8 +29,8 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 
 <section class="hero">
   <div class="eyebrow">NEWS</div>
-  <h1>ПОМOЩНИК <span>РЕДАКТОРА</span></h1>
-  <p>Кодовые слова, шаблоны объявлений и вся необходимая информация<br>для работы редакции Weazel News.</p>
+  <h1 id="heroTitle">КОДОВЫЕ</h1>
+  <p id="heroDescription">Кодовые слова и готовые объявления для работы редакции Weazel News.</p>
   <div class="heroStats">
     <div class="stat red"><div class="statIcon">♧</div><div><strong id="statTotal">0</strong><small>Всего кодовых</small></div></div>
     <div class="stat green"><div class="statIcon">✓</div><div><strong id="statActive">0</strong><small>Активных</small></div></div>
@@ -183,27 +183,41 @@ function updateStats(){
  document.getElementById('statSoon').textContent=soon;
  document.getElementById('statExpired').textContent=expired;
 }
+let activeCategory='codes';
 function render(){
  const q=document.getElementById('search').value.trim().toLowerCase();
  const letter=document.getElementById('search').dataset.letter||'';
- const map=sectionGroups(),out=[];
+ const map=sectionGroups();
  const nav=document.getElementById('topnav');
- nav.innerHTML=CATEGORIES.map((cat,i)=>'<button class="'+(i===0?'active':'')+'" onclick="jumpCategory(\''+cat.slug+'\')">'+esc(cat.name)+'</button>').join('')+(canEdit()?'<button onclick="openStaff()">Сотрудники</button>':'');
+ nav.innerHTML=CATEGORIES.map(cat=>'<button class="'+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')">'+esc(cat.name)+'</button>').join('')+
+   (canEdit()?'<button onclick="openStaff()">Сотрудники</button>':'');
  const side=document.getElementById('sideNav');
  side.innerHTML=CATEGORIES.map((cat,i)=>{
    const subs=cat.slug==='codes'?CODE_GROUPS.map((g,j)=>'<button onclick="jumpGroup('+j+')">'+esc(g)+'</button>').join(''):'';
-   return '<div class="sideGroup"><button class="sideItem '+(i===0?'active':'')+'" onclick="jumpCategory(\''+cat.slug+'\')"><span class="dot"></span><span>'+esc(cat.name)+'</span><span class="arr">›</span></button>'+(subs?'<div class="sideSub open">'+subs+'</div>':'')+'</div>';
+   return '<div class="sideGroup"><button class="sideItem '+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')"><span class="dot"></span><span>'+esc(cat.name)+'</span><span class="arr">'+(cat.slug===activeCategory?'⌄':'›')+'</span></button>'+(subs&&cat.slug===activeCategory?'<div class="sideSub open">'+subs+'</div>':'')+'</div>';
  }).join('');
- CATEGORIES.forEach(cat=>{
-   let items=(map.get(cat.slug)||[]).filter(t=>!q||[t.codeword,t.title,t.body,t.client_contact,t.group_name].join(' ').toLowerCase().includes(q));
-   if(letter)items=items.filter(t=>(t.codeword||t.title||'').toLocaleUpperCase('ru-RU').startsWith(letter));
-   out.push(sectionHTML(cat,items));
- });
- document.getElementById('content').innerHTML=out.join('');
+
+ let items=(map.get(activeCategory)||[]).filter(t=>!q||[t.codeword,t.title,t.body,t.client_contact,t.group_name].join(' ').toLowerCase().includes(q));
+ if(letter)items=items.filter(t=>(t.codeword||t.title||'').toLocaleUpperCase('ru-RU').startsWith(letter));
+ document.getElementById('content').innerHTML=sectionHTML(CATEGORIES.find(x=>x.slug===activeCategory),items);
  updateStats();
-}
-window.jumpCategory=(slug)=>{const el=document.getElementById('sec-'+slug);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})};
-window.jumpGroup=(i)=>{const el=document.getElementById('group-'+i);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})};
+};
+window.selectCategory=(slug)=>{
+ activeCategory=slug;
+ const current=CATEGORIES.find(x=>x.slug===slug)||CATEGORIES[0];
+ document.getElementById('heroTitle').innerHTML=slug==='codes'?'КОДОВЫЕ':esc(current.name);
+ document.getElementById('heroDescription').textContent=slug==='codes'?'Кодовые слова и готовые объявления для работы редакции Weazel News.':'Рабочие шаблоны и информация раздела «'+current.name+'».';
+ document.getElementById('search').value='';
+ document.getElementById('search').dataset.letter='';
+ document.querySelectorAll('.letter').forEach((x,i)=>x.classList.toggle('active',i===0));
+ render();
+ window.scrollTo({top:0,behavior:'smooth'});
+};
+window.jumpCategory=(slug)=>selectCategory(slug);
+window.jumpGroup=(i)=>{
+ const el=document.getElementById('group-'+i);
+ if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+};
 function sectionHTML(cat,items){
  if(cat.slug==='codes')return codesSectionHTML(cat,items);
  let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><h2>'+esc(cat.name)+'</h2></div><div class="sectionline"></div>'+(canEdit()?'<button class="add" onclick="openNew(\''+cat.slug+'\')">＋ Добавить шаблон</button>':'')+'</div>'+templateTable(items,cat.slug)+'</section>';
