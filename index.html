@@ -47,7 +47,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <input type="hidden" id="editId">
 <div class="grid">
 <div class="field"><label>Раздел</label><select id="fCategory"></select></div>
-<div class="field"><label>Подраздел / группа</label><input id="fGroup" placeholder="Например: Мафия 1"></div>
+<div class="field"><label>Подраздел</label><select id="fGroup"></select></div>
 <div class="field"><label>Кодовое слово</label><input id="fCodeword"></div>
 <div class="field"><label>Заголовок</label><input id="fTitle" required></div>
 <div class="field full"><label>Текст шаблона, максимум 120</label><textarea id="fBody" required oninput="updateLimit()"></textarea><div id="limit" class="limit">0 / 120</div><div class="hint">Разрешены только согласованные эмодзи. Вес каждого эмодзи учитывается отдельно.</div></div>
@@ -82,6 +82,7 @@ const ONE=new Set('♿ ⛔ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ⛎ �
 const TWO=new Set('⚠️ ☢️ ☣️ ⬆️ ↗️ ➡️ ↘️ ↙️ ⬅️ ↖️ ↩️ ↪️ ⤴️ ⤵️ ⚛️ ✡️ ☸️ ☯️ ✝️ ☦️ ☪️ ☮️ ▶️ ⏭️ ⏯️ ◀️ ⏹️ ⏺️ ⏏️ ✖️ ♾️ ❗️ 〰️ ⚕️ ♻️ ⚜️ ☑️ ✔️ 〽️ ✳️ ✴️ Ⓜ️ ㊗️ ㊙️ ◼️ ◻️ ☎️ ✉️ ✏️ ✒️ ✂️ ⛏️ ⚒️ ⚔️ ⚙️ ⚖️ ⛓️ ⚗️ ⚰️ ⚱️ ⛰️ ⛩️ ♨️ ⛴️ ✈️ ⏱️ ⏲️ ☀️ ☁️ ⛈️ ☂️ ⛱️ ❄️ ☃️ ☄️ ⛸️ ♟️ ⛷️ ⛹️ ☘️ ✌️ ☝️ ✍️ ☹️ ☠️ ❤️ ❣️'.split(' '));
 const THREE=new Set('⛑️ 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ #️⃣ *️⃣'.split(' '));
 let templates=[], role=null, user=null, editingId=null;
+const CODE_GROUPS=['Мафии','Банды','Клубы','Семьи','Бизнес','Разное'];
 
 function weightedLength(text){
  let s=String(text||''),total=[...s].length;
@@ -134,31 +135,40 @@ function sectionGroups(){
 function render(){
  const q=document.getElementById('search').value.trim().toLowerCase();
  const map=sectionGroups(),out=[];
- document.getElementById('jumps').innerHTML=CATEGORIES.filter(c=>c.slug==='codes').map((c,i)=>'<button class="jump" onclick="document.getElementById(\'sec-codes\').scrollIntoView({behavior:\'smooth\'});toggleDrawer()"><b>01</b>'+esc(c.name)+'</button>').join('');
+ document.getElementById('jumps').innerHTML=CODE_GROUPS.map((g,i)=>'<button class="jump" onclick="document.getElementById(\'group-'+i+'\').scrollIntoView({behavior:\'smooth\'});toggleDrawer()"><b>0'+(i+1)+'</b>'+esc(g)+'</button>').join('');
  const codes=map.get('codes')||[];
  const filtered=codes.filter(t=>!q||[t.codeword,t.title,t.body,t.client_contact,t.group_name].join(' ').toLowerCase().includes(q));
  out.push(sectionHTML(CATEGORIES[0],filtered));
  document.getElementById('content').innerHTML=out.join('');
 }
 function sectionHTML(cat,items){
- const groups=new Map();
- items.forEach(t=>{const g=t.group_name?.trim()||'Без подраздела';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(t)});
- let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><div class="eyebrow">РАЗДЕЛ 01</div><h2>'+esc(cat.name)+'</h2><p>Активные кодовые слова и готовые тексты</p></div><div class="sectionline"></div>'+(canEdit()?'<button class="add" onclick="openNew(\'codes\')">＋ Добавить шаблон</button>':'')+'</div>';
- if(!items.length)html+='<div class="table"><div class="empty">Пока нет шаблонов</div></div>';
- for(const [g,list] of groups){html+='<div class="subsection"><div class="subhead"><h3>'+esc(g)+'</h3><span>'+list.length+' поз.</span></div><div class="table"><div class="row head"><div class="cell">КОДОВОЕ</div><div class="cell">ШАБЛОН</div><div class="cell">СРОК</div><div class="cell">СВЯЗЬ</div><div class="cell">ДЕЙСТВИЕ</div></div>';
- list.forEach(t=>{const exp=isExpired(t);html+='<div class="row '+(exp?'expired':'')+'"><div class="cell code">'+esc(t.codeword||t.title)+'</div><div class="cell body" '+(!exp?'onclick="copyBody('+t.id+')"':'')+'>'+esc(exp?'Кодовое слово деактивировано':t.body)+'</div><div class="cell meta date">'+(t.permanent?'БЕССРОЧНО':esc(t.expires_on||'—'))+'</div><div class="cell meta contact">'+esc(t.client_contact||'—')+'</div><div class="cell copy">'+(exp?'<span>● Деактивировано</span>':'<button onclick="copyBody('+t.id+')">Копировать</button>')+(canEdit()&&!exp?'<button style="margin-left:5px" onclick="openEdit('+t.id+')">Изм.</button>':'')+'</div></div>'});
- html+='</div></div>'}
+ const byGroup=new Map(CODE_GROUPS.map(g=>[g,[]]));
+ items.forEach(t=>{const g=t.group_name?.trim()||'Разное';if(!byGroup.has(g))byGroup.set('Разное',byGroup.get('Разное').concat([t]));else byGroup.get(g).push(t)});
+ let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><div class="eyebrow">РАЗДЕЛ 01</div><h2>'+esc(cat.name)+'</h2><p>Активные кодовые слова и готовые тексты</p></div><div class="sectionline"></div></div>';
+ CODE_GROUPS.forEach((g,i)=>{
+   const list=byGroup.get(g)||[];
+   html+='<div class="subsection" id="group-'+i+'"><div class="subhead"><div><div class="eyebrow" style="font-size:7px;letter-spacing:2px">ПОДРАЗДЕЛ 0'+(i+1)+'</div><h3>'+esc(g)+'</h3></div><span>'+list.length+' поз.</span>'+(canEdit()?'<button class="add" onclick="openNew(\'codes\','+JSON.stringify(g)+')">＋ Добавить шаблон</button>':'')+'</div>';
+   if(!list.length){
+     html+='<div class="table"><div class="empty">В этом подразделе пока нет шаблонов'+(canEdit()?' · добавьте первый шаблон':'')+'</div></div>';
+   } else {
+     html+='<div class="table"><div class="row head"><div class="cell">КОДОВОЕ</div><div class="cell">ШАБЛОН</div><div class="cell">СРОК</div><div class="cell">СВЯЗЬ</div><div class="cell">ДЕЙСТВИЕ</div></div>';
+     list.forEach(t=>{const exp=isExpired(t);html+='<div class="row '+(exp?'expired':'')+'"><div class="cell code">'+esc(t.codeword||t.title)+'</div><div class="cell body" '+(!exp?'onclick="copyBody('+t.id+')"':'')+'>'+esc(exp?'Кодовое слово деактивировано':t.body)+'</div><div class="cell meta date">'+(t.permanent?'БЕССРОЧНО':esc(t.expires_on||'—'))+'</div><div class="cell meta contact">'+esc(t.client_contact||'—')+'</div><div class="cell copy">'+(exp?'<span>● Деактивировано</span>':'<button onclick="copyBody('+t.id+')">Копировать</button>')+(canEdit()&&!exp?'<button style="margin-left:5px" onclick="openEdit('+t.id+')">Изм.</button>':'')+'</div></div>'});
+     html+='</div>';
+   }
+   html+='</div>';
+ });
  return html+'</section>';
 }
 window.copyBody=async id=>{const t=templates.find(x=>x.id===id);if(!t||isExpired(t))return;await navigator.clipboard.writeText(t.body||'');toast('Текст скопирован')};
-window.openNew=(cat)=>{
+window.openNew=(cat,group='Разное')=>{
  editingId=null;document.getElementById('modalTitle').textContent='Добавить шаблон';document.getElementById('editId').value='';
- fillCategories(cat);['fGroup','fCodeword','fTitle','fBody','fExpires','fContact'].forEach(id=>document.getElementById(id).value='');document.getElementById('fPermanent').checked=false;document.getElementById('deleteBtn').style.display='none';document.getElementById('saveError').textContent='';updateLimit();openModal('editOverlay')
+ fillCategories(cat);fillGroups(group);['fCodeword','fTitle','fBody','fExpires','fContact'].forEach(id=>document.getElementById(id).value='');document.getElementById('fPermanent').checked=false;document.getElementById('deleteBtn').style.display='none';document.getElementById('saveError').textContent='';updateLimit();openModal('editOverlay')
 };
 window.openEdit=id=>{
- const t=templates.find(x=>x.id===id);if(!t||!canEdit())return;editingId=id;document.getElementById('modalTitle').textContent='Изменить шаблон';document.getElementById('editId').value=id;fillCategories(t.category);document.getElementById('fGroup').value=t.group_name||'';document.getElementById('fCodeword').value=t.codeword||'';document.getElementById('fTitle').value=t.title||'';document.getElementById('fBody').value=t.body||'';document.getElementById('fExpires').value=t.expires_on||'';document.getElementById('fContact').value=t.client_contact||'';document.getElementById('fPermanent').checked=!!t.permanent;document.getElementById('deleteBtn').style.display='block';document.getElementById('saveError').textContent='';updateLimit();openModal('editOverlay')
+ const t=templates.find(x=>x.id===id);if(!t||!canEdit())return;editingId=id;document.getElementById('modalTitle').textContent='Изменить шаблон';document.getElementById('editId').value=id;fillCategories(t.category);fillGroups(t.group_name||'Разное');document.getElementById('fCodeword').value=t.codeword||'';document.getElementById('fTitle').value=t.title||'';document.getElementById('fBody').value=t.body||'';document.getElementById('fExpires').value=t.expires_on||'';document.getElementById('fContact').value=t.client_contact||'';document.getElementById('fPermanent').checked=!!t.permanent;document.getElementById('deleteBtn').style.display='block';document.getElementById('saveError').textContent='';updateLimit();openModal('editOverlay')
 };
 function fillCategories(selected){document.getElementById('fCategory').innerHTML=CATEGORIES.map(c=>'<option value="'+c.slug+'" '+(c.slug===selected?'selected':'')+'>'+esc(c.name)+'</option>').join('')}
+function fillGroups(selected){const el=document.getElementById('fGroup');el.innerHTML=CODE_GROUPS.map(g=>'<option value="'+esc(g)+'" '+(g===selected?'selected':'')+'>'+esc(g)+'</option>').join('');if(selected&&!CODE_GROUPS.includes(selected))el.insertAdjacentHTML('beforeend','<option value="'+esc(selected)+'" selected>'+esc(selected)+'</option>')}
 window.updateLimit=()=>{const n=weightedLength(document.getElementById('fBody').value),e=document.getElementById('limit');e.textContent=n+' / 120';e.className='limit '+(n>120?'bad':'ok')};
 window.saveTemplate=async ev=>{
  ev.preventDefault();const body=document.getElementById('fBody').value,n=weightedLength(body),bad=validEmoji(body),err=document.getElementById('saveError');err.textContent='';
@@ -175,7 +185,7 @@ window.deleteTemplate=async()=>{
 };
 document.getElementById('search').addEventListener('input',render);
 document.getElementById('fBody').addEventListener('input',updateLimit);
-(async()=>{await refreshRole();await load()})();
+(async()=>{fillGroups('Разное');await refreshRole();await load()})();
 </script>
 </body>
 </html>
