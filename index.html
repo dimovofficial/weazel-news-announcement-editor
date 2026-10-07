@@ -190,11 +190,11 @@ function render(){
  const letter=document.getElementById('search').dataset.letter||'';
  const map=sectionGroups();
  const nav=document.getElementById('topnav');
- nav.innerHTML=CATEGORIES.map(cat=>'<button class="'+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\\''+cat.slug+'\\')">'+esc(cat.name)+'</button>').join('')+(canEdit()?'<button onclick="openStaff()">Сотрудники</button>':'');
+ nav.innerHTML=CATEGORIES.map(cat=>'<button class="'+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')">'+esc(cat.name)+'</button>').join('')+(canEdit()?'<button onclick="openStaff()">Сотрудники</button>':'');
  const side=document.getElementById('sideNav');
  side.innerHTML=CATEGORIES.map((cat,i)=>{
    const subs=cat.slug==='codes'?CODE_GROUPS.map((g,j)=>'<button onclick="jumpGroup('+j+')">'+esc(g)+'</button>').join(''):'';
-   return '<div class="sideGroup"><button class="sideItem '+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\\''+cat.slug+'\\')"><span class="dot"></span><span>'+esc(cat.name)+'</span><span class="arr">'+(cat.slug===activeCategory?'⌄':'›')+'</span></button>'+(subs&&cat.slug===activeCategory?'<div class="sideSub open">'+subs+'</div>':'')+'</div>';
+   return '<div class="sideGroup"><button class="sideItem '+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')"><span class="dot"></span><span>'+esc(cat.name)+'</span><span class="arr">'+(cat.slug===activeCategory?'⌄':'›')+'</span></button>'+(subs&&cat.slug===activeCategory?'<div class="sideSub open">'+subs+'</div>':'')+'</div>';
  }).join('');
 
  if(q){
