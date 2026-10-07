@@ -67,7 +67,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <div class="field full"><label>Текст шаблона, максимум 120</label><textarea id="fBody" required oninput="updateLimit()"></textarea><div id="limit" class="limit">0 / 120</div><div class="hint">Разрешены только согласованные эмодзи. Вес каждого эмодзи учитывается отдельно.</div></div>
 <div class="field"><label>Срок действия</label><input id="fExpires" type="date"></div>
 <div class="field"><label>Связь</label><input id="fContact"></div>
-<div class="field"><label><input id="fPermanent" type="checkbox" style="width:auto"> Бессрочный</label></div>
+<div class="field"><label><input id="fPermanent" type="checkbox" style="width:auto"> Бессрочный</label></div><div class="field" id="licenseField"><label><input id="fLicenseActive" type="checkbox" style="width:auto" checked> Лицензия действует</label><input id="fLicenseExpires" type="date" style="margin-top:7px"><div class="hint">Только для подразделов «Мафии» и «Банды». После даты лицензия считается недействительной, а кодовое автоматически деактивируется.</div></div>
 </div>
 <div class="error" id="saveError"></div>
 <div class="actions"><button type="button" class="danger" id="deleteBtn" onclick="deleteTemplate()" style="display:none;margin-right:auto">Удалить</button><button type="button" class="cancel" onclick="closeModal('editOverlay')">Отмена</button><button class="save">Сохранить</button></div>
@@ -121,7 +121,7 @@ function weightedLength(text){
  return total;
 }
 function validEmoji(text){const allowed=new Set([...ONE,...TWO,...THREE]);let stripped=text;for(const token of [...allowed].sort((a,b)=>b.length-a.length))stripped=stripped.split(token).join('');return /[\p{Extended_Pictographic}]/u.test(stripped)?[...stripped].find(ch=>/\p{Extended_Pictographic}/u.test(ch)):null}
-function isExpired(t){return !t.permanent && t.expires_on && new Date(t.expires_on+'T23:59:59')<new Date()}
+function isExpired(t){const codeLicense=t.category==='codes'&&(t.group_name==='Мафии'||t.group_name==='Банды');const licenseExpired=codeLicense&&(!t.license_active||(t.license_expires_on&&t.license_expires_on<new Date().toISOString().slice(0,10)));return licenseExpired||(!t.permanent&&t.expires_on&&new Date(t.expires_on+'T23:59:59')<new Date())}
 function canEdit(){return ['creator','admin','senior_admin'].includes(role)}
 function canEditUI(){return !!user&&canEdit()&&editorMode}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -427,6 +427,7 @@ window.openNew=(cat,group='Разное')=>{
  fillCategories(cat);fillGroups(group);
  ['fCodeword','fTitle','fBody','fExpires','fContact'].forEach(id=>document.getElementById(id).value='');
  document.getElementById('fPermanent').checked=false;
+ document.getElementById('fLicenseActive').checked=true;document.getElementById('fLicenseExpires').value='';
  document.getElementById('deleteBtn').style.display='none';
  document.getElementById('saveError').textContent='';
  toggleCodeFields(cat);updateLimit();openModal('editOverlay');
@@ -445,6 +446,8 @@ function toggleCodeFields(cat){
  if(group)group.style.display='';
  const permanent=document.getElementById('fPermanent')?.closest('.field');
  if(permanent)permanent.style.display=code?'':'none';
+ const groupValue=document.getElementById('fGroup')?.value||''; const license=(code&&(groupValue==='Мафии'||groupValue==='Банды'));
+ const lf=document.getElementById('licenseField'); if(lf)lf.style.display=license?'':'none';
 }
 let editingSubcategoryId=null;
 window.openSubsectionForm=()=>{
@@ -492,6 +495,7 @@ window.openEdit=id=>{
  document.getElementById('fCodeword').value=t.codeword||'';document.getElementById('fTitle').value=t.title||'';
  document.getElementById('fBody').value=t.body||'';document.getElementById('fExpires').value=t.expires_on||'';
  document.getElementById('fContact').value=t.client_contact||'';document.getElementById('fPermanent').checked=!!t.permanent;
+ document.getElementById('fLicenseActive').checked=t.license_active!==false;document.getElementById('fLicenseExpires').value=t.license_expires_on||'';
  document.getElementById('deleteBtn').style.display='block';document.getElementById('saveError').textContent='';
  toggleCodeFields(t.category);updateLimit();openModal('editOverlay');
 };
@@ -516,6 +520,8 @@ window.saveTemplate=async ev=>{
  if(n>120){err.textContent='Текст превышает лимит 120 символов: '+n+' / 120';return}
  if(bad){err.textContent='Использован недопустимый эмодзи: '+bad;return}
  const isCode=category==='codes';
+ const groupName=document.getElementById('fGroup').value;
+ const licenseRelevant=isCode&&(groupName==='Мафии'||groupName==='Банды');
  const args={
    p_template_id:editingId,
    p_category:category,
@@ -524,9 +530,11 @@ window.saveTemplate=async ev=>{
    p_body:body,
    p_expires_on:isCode?(document.getElementById('fExpires').value||null):null,
    p_client_contact:isCode?document.getElementById('fContact').value.trim():'',
-   p_group_name:document.getElementById('fGroup').value,
+   p_group_name:groupName,
    p_permanent:isCode?document.getElementById('fPermanent').checked:true,
-   p_variants:[],p_sort_order:0
+   p_variants:[],p_sort_order:0,
+   p_license_active:licenseRelevant?document.getElementById('fLicenseActive').checked:true,
+   p_license_expires_on:licenseRelevant?(document.getElementById('fLicenseExpires').value||null):null
  };
  if(isCode&&!args.p_codeword){err.textContent='Укажите кодовое слово';return}
  if(isCode&&!args.p_title){err.textContent='Укажите заголовок';return}
