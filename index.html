@@ -462,7 +462,25 @@ window.openSubsectionForm=()=>{
  document.getElementById('subError').textContent='';
  openModal('subsectionOverlay');
 };
-window.deleteSubsection=async id=>{\n if(!canManageStaff())return;\n const sub=subcategories.find(x=>String(x.id)===String(id));\n if(!sub)return;\n const count=templates.filter(t=>t.category===sub.category&&(t.group_name||'')===sub.name).length;\n const warning=count?'Подраздел «'+sub.name+'» содержит '+count+' шаблон(ов).\\n\\nПри удалении подраздела они тоже будут удалены.\\n\\nПродолжить?':'Удалить подраздел «'+sub.name+'»?';\n if(!confirm(warning))return;\n try{\n   const r=await withTimeout(sb.rpc('editor_delete_subcategory',{p_subcategory_id:id}),7000);\n   if(r.error)throw new Error(r.error.message);\n   await load();\n   toast(count?'Подраздел удалён вместе с шаблонами: '+count:'Подраздел удалён');\n }catch(e){toast(e.message)}\n};\nwindow.openSubsectionEdit=(id)=>{
+window.deleteSubsection=async id=>{
+ if(!canManageStaff())return;
+ const sub=subcategories.find(x=>String(x.id)===String(id));
+ if(!sub)return;
+ const count=templates.filter(t=>t.category===sub.category&&(t.group_name||'')===sub.name).length;
+ const warning=count?'Подраздел «'+sub.name+'» содержит '+count+' шаблон(ов).\
+\
+При удалении подраздела они тоже будут удалены.\
+\
+Продолжить?':'Удалить подраздел «'+sub.name+'»?';
+ if(!confirm(warning))return;
+ try{
+   const r=await withTimeout(sb.rpc('editor_delete_subcategory',{p_subcategory_id:id}),7000);
+   if(r.error)throw new Error(r.error.message);
+   await load();
+   toast(count?'Подраздел удалён вместе с шаблонами: '+count:'Подраздел удалён');
+ }catch(e){toast(e.message)}
+};
+window.openSubsectionEdit=(id)=>{
  if(!canEditUI())return;
  const sub=subcategories.find(x=>String(x.id)===String(id));
  if(!sub)return;
