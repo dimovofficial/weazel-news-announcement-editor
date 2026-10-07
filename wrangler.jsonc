@@ -3,6 +3,6 @@
   "name": "weazel-news-announcement-editor",
   "compatibility_date": "2026-10-07",
   "assets": {
-    "directory": "./editor-assistant"
+    "directory": "."
   }
 }
