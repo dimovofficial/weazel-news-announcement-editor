@@ -426,6 +426,10 @@ function toggleCodeFields(cat){
    const field=document.getElementById(id)?.closest('.field');
    if(field)field.style.display=(id==='fCategory' || code)?'':'none';
  });
+ const title=document.getElementById('fTitle');
+ const codeword=document.getElementById('fCodeword');
+ if(title)title.required=code;
+ if(codeword)codeword.required=false;
  const group=document.getElementById('fGroup')?.closest('.field');
  if(group)group.style.display='';
  const permanent=document.getElementById('fPermanent')?.closest('.field');
