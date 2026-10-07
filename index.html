@@ -134,20 +134,38 @@ window.toggleDrawer=()=>document.getElementById('drawer').classList.toggle('open
 
 async function load(){
  const content=document.getElementById('content');
+ const timeout=(ms)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error('Превышено время ожидания соединения с Supabase')),ms));
  try{
-   const [tplRes,subRes]=await Promise.all([
+   const tplRes=await Promise.race([
      sb.rpc('editor_templates',{p_search:null,p_category:null}),
-     sb.rpc('editor_subcategories',{p_category:null})
+     timeout(8000)
    ]);
    if(tplRes.error)throw new Error('Шаблоны: '+tplRes.error.message);
-   if(subRes.error)throw new Error('Подразделы: '+subRes.error.message);
    templates=Array.isArray(tplRes.data)?tplRes.data:(tplRes.data==null?[]:[...tplRes.data]);
-   subcategories=Array.isArray(subRes.data)?subRes.data:(subRes.data==null?[]:[...subRes.data]);
-   render();
  }catch(error){
-   console.error('Editor load error',error);
-   content.innerHTML='<div class="empty">Не удалось загрузить данные.<br>'+esc(error?.message||error||'Неизвестная ошибка')+'</div>';
+   console.error('Template load error',error);
+   templates=[];
  }
+ try{
+   const subRes=await Promise.race([
+     sb.rpc('editor_subcategories',{p_category:null}),
+     timeout(8000)
+   ]);
+   if(subRes.error)throw new Error(subRes.error.message);
+   subcategories=Array.isArray(subRes.data)?subRes.data:(subRes.data==null?[]:[...subRes.data]);
+ }catch(error){
+   console.error('Subcategory load error',error);
+   subcategories=[
+     {id:'fallback-codes-mafia',category:'codes',name:'Мафии',sort_order:1},
+     {id:'fallback-codes-gangs',category:'codes',name:'Банды',sort_order:2},
+     {id:'fallback-codes-clubs',category:'codes',name:'Клубы',sort_order:3},
+     {id:'fallback-codes-families',category:'codes',name:'Семьи',sort_order:4},
+     {id:'fallback-codes-business',category:'codes',name:'Бизнес',sort_order:5},
+     {id:'fallback-codes-other',category:'codes',name:'Разное',sort_order:6},
+     ...CATEGORIES.filter(c=>c.slug!=='codes').map(c=>({id:'fallback-'+c.slug,category:c.slug,name:'Разное',sort_order:1}))
+   ];
+ }
+ render();
 }
 async function refreshRole(){
  const {data}=await sb.rpc('current_staff_role');
