@@ -225,9 +225,11 @@ function render(){
  const nav=document.getElementById('topnav');
  nav.innerHTML=CATEGORIES.map(cat=>'<button class="'+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')">'+esc(cat.name)+'</button>').join('')+(canEditUI()?'<button onclick="openStaff()">Сотрудники</button>':'');
  const side=document.getElementById('sideNav');
- side.innerHTML=CATEGORIES.map((cat,i)=>{
-   const subs=cat.slug==='codes'?CODE_GROUPS.map((g,j)=>'<button onclick="jumpGroup('+j+')">'+esc(g)+'</button>').join(''):'';
-   return '<div class="sideGroup"><button class="sideItem '+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')"><span class="dot"></span><span>'+esc(cat.name)+'</span><span class="arr">'+(cat.slug===activeCategory?'⌄':'›')+'</span></button>'+(subs&&cat.slug===activeCategory?'<div class="sideSub open">'+subs+'</div>':'')+'</div>';
+ side.innerHTML=CATEGORIES.map(cat=>{
+   const active=cat.slug===activeCategory;
+   const subs=active?categorySubcategories(cat.slug):[];
+   const subHtml=subs.length?'<div class="sideSub open">'+subs.map((s,j)=>'<button onclick="jumpSubsection('+s.id+')">'+esc(s.name)+'</button>').join('')+'</div>':'';
+   return '<div class="sideGroup"><button class="sideItem '+(active?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')"><span class="dot"></span><span>'+esc(cat.name)+'</span><span class="arr">'+(active?'⌄':'›')+'</span></button>'+subHtml+'</div>';
  }).join('');
 
  if(q){
@@ -249,7 +251,7 @@ function render(){
 function categorySubcategories(slug){return subcategories.filter(s=>s.category===slug).sort((a,b)=>(a.sort_order-b.sort_order)||(a.id-b.id));}function sectionHTML(cat,items){
  if(cat.slug==='codes')return codesSectionHTML(cat,items);
  const groups=categorySubcategories(cat.slug);
- let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><h2>'+esc(cat.name)+'</h2></div><div class="sectionline"></div></div>';
+ let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><h2>'+esc(cat.name)+'</h2></div><div class="sectionline"></div>'+(canEditUI()?'<button class="add" onclick="openSubsectionForm()">＋ Добавить подраздел</button>':'')+'</div>';
  groups.forEach(g=>{
    const list=items.filter(t=>(t.group_name||'')===g.name);
    html+='<div class="subsection" id="sub-'+cat.slug+'-'+g.id+'"><div class="subhead"><span style="font-size:19px;color:#fff">●</span><h3>'+esc(g.name)+'</h3><span>'+list.length+' поз.</span>'+(canEditUI()?'<button class="add" onclick="openNew(\''+cat.slug+'\',\''+esc(g.name).replace(/'/g,"\\'")+'\')">＋ Добавить шаблон</button>':'')+'<span style="color:#69737c">⌄</span></div>'+templateTable(list,cat.slug)+'</div>';
@@ -291,10 +293,12 @@ window.openNew=(cat,group='Разное')=>{
 };
 function toggleCodeFields(cat){
  const code=cat==='codes';
- ['fCodeword','fTitle','fExpires','fContact'].forEach(id=>{
+ ['fCategory','fCodeword','fTitle','fExpires','fContact'].forEach(id=>{
    const field=document.getElementById(id)?.closest('.field');
-   if(field)field.style.display=code?'':'none';
+   if(field)field.style.display=(id==='fCategory' || code)?'':'none';
  });
+ const group=document.getElementById('fGroup')?.closest('.field');
+ if(group)group.style.display='';
  const permanent=document.getElementById('fPermanent')?.closest('.field');
  if(permanent)permanent.style.display=code?'':'none';
 }
@@ -372,7 +376,7 @@ document.getElementById('search').addEventListener('input',render);
 document.getElementById('loginButton')?.addEventListener('click',()=>openModal('loginOverlay'));
 renderLetters();
 document.getElementById('fBody').addEventListener('input',updateLimit);
-(async()=>{fillGroups('Разное');await refreshRole();await load()})();
+(async()=>{await refreshRole();await load();fillCategories(activeCategory);fillGroups(categorySubcategories(activeCategory)[0]?.name||'');toggleCodeFields(activeCategory)})();
 </script>
 </body>
 </html>
