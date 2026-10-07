@@ -216,7 +216,7 @@ window.openStaff=async()=>{
    const rows=Array.isArray(r.data)?r.data:[];
    if(!rows.length){list.innerHTML='<div class="empty">Сотрудников пока нет.</div>';return}
    list.innerHTML='<div class="staffrow head"><div>Имя</div><div>Логин</div><div>Discord</div><div>Роль</div></div>'+
-   rows.map(a=>{const rn=a.staff_role==='creator'?'Creator':a.staff_role==='senior_admin'?'Senior Admin':a.staff_role==='admin'?'Admin':'Сотрудник';
+   rows.map(a=>{const rn=a.staff_role==='creator'?'Создатель':a.staff_role==='senior_admin'?'Главный администратор':a.staff_role==='admin'?'Администратор':'Сотрудник';
      const c=(a.staff_role!=='creator'&&canManageStaff())?'<button class="cancel" style="padding:6px 8px;margin:3px" onclick="changeStaffRole(\''+a.user_id+'\',\''+a.staff_role+'\')">Роль</button><button class="danger" style="padding:6px 8px" onclick="removeStaff(\''+a.user_id+'\')">Удалить</button>':'';
      return '<div class="staffrow"><div>'+esc(a.display_name||a.username)+'</div><div>'+esc(a.username||'—')+'</div><div>'+esc(a.discord_name||'—')+'</div><div class="staffrole">'+esc(rn)+' '+c+'</div></div>'
    }).join('');
@@ -391,7 +391,7 @@ function categorySubcategories(slug){return subcategories.filter(s=>s.category==
  let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><h2>'+esc(cat.name)+'</h2></div><div class="sectionline"></div>'+(canEditUI()?'<button class="add" onclick="openSubsectionForm()">＋ Добавить подраздел</button>':'')+'</div>';
  groups.forEach(g=>{
    const list=items.filter(t=>(t.group_name||'')===g.name);
-   html+='<div class="subsection collapsed" id="sub-'+cat.slug+'-'+g.id+'"><div class="subhead" onclick="toggleSubsection(event,'+g.id+')"><span style="font-size:19px;color:#fff">●</span><h3>'+esc(g.name)+'</h3><span>'+list.length+' поз.</span>'+(canEditUI()?'<button class="add" onclick="event.stopPropagation();openNew(\''+cat.slug+'\',\''+esc(g.name).replace(/'/g,"\\'")+'\')">＋ Добавить шаблон</button>':'')+(canEditUI()?'<button class="add subEditBtn" onclick="event.stopPropagation();openSubsectionEdit('+g.id+')">Изм. подраздел</button>':'')+(canManageStaff()?'<button class="add subEditBtn subDeleteBtn" onclick="event.stopPropagation();deleteSubsection('+g.id+')">Удалить</button>':'')+'</div>'+templateTable(list,cat.slug)+'</div>';
+   html+='<div class="subsection collapsed" id="sub-'+cat.slug+'-'+g.id+'"><div class="subhead" onclick="toggleSubsection(event,'+g.id+')"><span style="font-size:19px;color:#fff">●</span><h3>'+esc(g.name)+'</h3><span>'+list.length+' поз.</span>'+(canEditUI()?'<button class="add" onclick="event.stopPropagation();openNew(\''+cat.slug+'\',\''+esc(g.name).replace(/'/g,"\\'")+'\')">＋ Добавить шаблон</button>':'')+(canEditUI()?'<button class="add subEditBtn" onclick="event.stopPropagation();openSubsectionEdit('+g.id+')">Изм. подраздел</button>':'')+(canEditUI()&&canManageStaff()?'<button class="add subEditBtn subDeleteBtn" onclick="event.stopPropagation();deleteSubsection('+g.id+')">Удалить</button>':'')+'</div>'+templateTable(list,cat.slug)+'</div>';
  });
  if(!groups.length)html+='<div class="empty">Подразделов пока нет</div>';
  return html+'</section>';
