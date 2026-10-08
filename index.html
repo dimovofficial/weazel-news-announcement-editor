@@ -867,7 +867,7 @@ window.importPastedTemplates=async()=>{
   if(bold){const g=normalizeGroup(bold[1]);if(known.has(g)||g==='Контракты, поиск людей'||g==='Разное')group=g;continue}
   const plain=normalizeGroup(line.replace(/^:+|:$/g,'').trim());
   if(known.has(plain)&&!/[.!?]/.test(line)){group=plain;continue}
-  if(line.startsWith('---')||line==='Недвижимость')continue;
+  if(/^[\\s:|_\\-]+$/.test(line)||line.startsWith('---')||line==='Недвижимость')continue;
   if(line==='Квартира'||line==='Дом'||line==='Особняк'||line==='Обмен'||line==='Аренда жилья') {group=line;continue}
   if(line.length>2)items.push({group,body:line});
  }
