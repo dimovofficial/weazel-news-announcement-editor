@@ -205,6 +205,7 @@ const ONE=new Set('♿ ⛔ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ⛎ �
 const TWO=new Set('⚠️ ☢️ ☣️ ⬆️ ↗️ ➡️ ↘️ ↙️ ⬅️ ↖️ ↩️ ↪️ ⤴️ ⤵️ ⚛️ ✡️ ☸️ ☯️ ✝️ ☦️ ☪️ ☮️ ▶️ ⏭️ ⏯️ ◀️ ⏹️ ⏺️ ⏏️ ✖️ ♾️ ❗️ 〰️ ⚕️ ♻️ ⚜️ ☑️ ✔️ 〽️ ✳️ ✴️ Ⓜ️ ㊗️ ㊙️ ◼️ ◻️ ☎️ ✉️ ✏️ ✒️ ✂️ ⛏️ ⚒️ ⚔️ ⚙️ ⚖️ ⛓️ ⚗️ ⚰️ ⚱️ ⛰️ ⛩️ ♨️ ⛴️ ✈️ ⏱️ ⏲️ ☀️ ☁️ ⛈️ ☂️ ⛱️ ❄️ ☃️ ☄️ ⛸️ ♟️ ⛷️ ⛹️ ☘️ ✌️ ☝️ ✍️ ☹️ ☠️ ❤️ ❣️'.split(' '));
 const THREE=new Set('⛑️ 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ #️⃣ *️⃣'.split(' '));
 let templates=[], subcategories=[], role=null, user=null, editingId=null, editorMode=false;
+let templateCache=new Map(), codesTemplates=[], searchResults=[], searchRequestId=0, loadingCategory=null;
 const CODE_GROUPS=['Мафии','Банды','Клубы','Семьи','Бизнес','Разное'];
 
 function weightedLength(text){
@@ -249,13 +250,14 @@ function updateLimit(){
  out.textContent=n+' / 120';
  out.style.color=n>120?'#ff5961':n>=105?'#ff9d00':'#69737c';
 }
-window.selectCategory=(slug)=>{
+window.selectCategory=async(slug)=>{
  if(!CATEGORIES.some(c=>c.slug===slug))return;
  activeCategory=slug;
  document.getElementById('search').value='';
  document.getElementById('search').dataset.letter='';
+ searchResults=[];
  document.querySelectorAll('.letter').forEach((x,i)=>x.classList.toggle('active',i===0));
- render();
+ await loadCategory(slug);
  window.scrollTo({top:0,behavior:'smooth'});
 };
 window.toggleSubsection=(event,id)=>{
@@ -286,10 +288,11 @@ function renderSearchResults(matches){
  if(matches.length>10)el.innerHTML+='<div class="searchEmpty">Показаны первые 10 результатов. Уточните запрос.</div>';
  el.classList.add('open');
 }
-window.openSearchResult=(id,category)=>{
+window.openSearchResult=async(id,category)=>{
  document.getElementById('searchResults').classList.remove('open');
  document.getElementById('search').value='';document.getElementById('search').dataset.letter='';
- activeCategory=category;render();
+ activeCategory=category;searchResults=[];
+ await loadCategory(category);
  setTimeout(()=>{const row=document.getElementById('row-'+id);if(!row)return;const box=row.closest('.subsection');if(box)box.classList.remove('collapsed');row.classList.remove('searchTarget');void row.offsetWidth;row.classList.add('searchTarget');row.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>row.classList.remove('searchTarget'),4200)},120);
 };
 function searchSectionHTML(cat,list){
@@ -333,31 +336,49 @@ window.removeStaff=async id=>{
  try{const r=await withTimeout(sb.rpc('remove_staff_account',{p_user_id:id}),7000);if(r.error)throw new Error(r.error.message);await window.openStaff();toast('Доступ удалён')}catch(e){toast(e.message)}
 };
 
-async function load(){
- const content=document.getElementById('content');
- const timeout=(ms)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error('Превышено время ожидания соединения с Supabase')),ms));
- try{
-   const all=[];
-   const pageSize=350;
-   for(let offset=0;;offset+=pageSize){
-     const tplRes=await Promise.race([
-       sb.rpc('editor_templates_page',{p_search:null,p_category:null,p_limit:pageSize,p_offset:offset}),
-       timeout(8000)
-     ]);
-     if(tplRes.error)throw new Error('Шаблоны: '+tplRes.error.message);
-     const page=Array.isArray(tplRes.data)?tplRes.data:(tplRes.data==null?[]:[...tplRes.data]);
-     all.push(...page);
-     if(page.length<pageSize)break;
-   }
-   templates=all;
- }catch(error){
-   console.error('Template load error',error);
-   templates=[];
+async function fetchTemplatePages(p_search=null,p_category=null){
+ const all=[],pageSize=p_search?100:350;
+ for(let offset=0;;offset+=pageSize){
+   const tplRes=await Promise.race([
+     sb.rpc('editor_templates_page',{p_search:p_search||null,p_category:p_category||null,p_limit:pageSize,p_offset:offset}),
+     new Promise((_,reject)=>setTimeout(()=>reject(new Error('Превышено время ожидания соединения с Supabase')),8000))
+   ]);
+   if(tplRes.error)throw new Error('Шаблоны: '+tplRes.error.message);
+   const page=Array.isArray(tplRes.data)?tplRes.data:(tplRes.data==null?[]:[...tplRes.data]);
+   all.push(...page);
+   if(page.length<pageSize)break;
  }
+ return all;
+}
+async function loadCategory(slug,force=false){
+ if(templateCache.has(slug)&&!force){
+   templates=templateCache.get(slug)||[];
+   if(slug==='codes')codesTemplates=templates;
+   render();
+   return;
+ }
+ loadingCategory=slug;
+ document.getElementById('content').innerHTML='<div class="empty">Загрузка раздела «'+esc(CATEGORIES.find(c=>c.slug===slug)?.name||slug)+'»...</div>';
+ try{
+   const rows=await fetchTemplatePages(null,slug);
+   templateCache.set(slug,rows);
+   templates=rows;
+   if(slug==='codes')codesTemplates=rows;
+   loadingCategory=null;
+   render();
+ }catch(error){
+   loadingCategory=null;
+   templates=[];
+   render();
+   toast('Не удалось загрузить раздел: '+(error.message||error));
+   console.error('Category load error',error);
+ }
+}
+async function loadSubcategories(){
  try{
    const subRes=await Promise.race([
      sb.rpc('editor_subcategories',{p_category:null}),
-     timeout(8000)
+     new Promise((_,reject)=>setTimeout(()=>reject(new Error('Превышено время ожидания соединения')),8000))
    ]);
    if(subRes.error)throw new Error(subRes.error.message);
    subcategories=Array.isArray(subRes.data)?subRes.data:(subRes.data==null?[]:[...subRes.data]);
@@ -373,7 +394,11 @@ async function load(){
      ...CATEGORIES.filter(c=>c.slug!=='codes').map(c=>({id:'fallback-'+c.slug,category:c.slug,name:'Разное',sort_order:1}))
    ];
  }
+}
+async function load(){
  render();
+ await loadSubcategories();
+ await loadCategory(activeCategory,true);
 }
 async function refreshRole(){
  try{
@@ -509,7 +534,7 @@ window.filterLetter=(letter,btn)=>{
  document.getElementById('search').dataset.letter=letter==='Все'?'':letter;render();
 };
 function updateStats(){
- const codes=templates.filter(t=>t.category==='codes');
+ const codes=codesTemplates.length?codesTemplates:templates.filter(t=>t.category==='codes');
  const active=codes.filter(t=>!isExpired(t)).length;
  const expired=codes.filter(t=>isExpired(t)).length;
  const soon=codes.filter(t=>!isExpired(t)&&!t.permanent&&t.expires_on&&((new Date(t.expires_on+'T23:59:59')-new Date())/86400000)<=7).length;
@@ -534,7 +559,7 @@ function render(){
  }).join('');
 
  if(q){
-   const matches=templates.filter(t=>[t.codeword,t.title,t.body,t.client_contact,t.group_name].join(' ').toLowerCase().includes(q));
+   const matches=searchResults;
    renderSearchResults(matches);
    const groups=new Map();
    for(const t of matches){if(!groups.has(t.category))groups.set(t.category,[]);groups.get(t.category).push(t)}
@@ -781,7 +806,24 @@ document.addEventListener('mouseout',e=>{
 });
 document.addEventListener('scroll',()=>{if(tooltipTarget)positionFullTextTooltip(tooltipTarget)},{passive:true});
 window.addEventListener('resize',()=>{if(tooltipTarget)positionFullTextTooltip(tooltipTarget)});
-document.getElementById('search').addEventListener('input',render);
+document.getElementById('search').addEventListener('input',async()=>{
+ const q=document.getElementById('search').value.trim().toLowerCase();
+ document.getElementById('search').dataset.letter='';
+ const requestId=++searchRequestId;
+ if(!q){searchResults=[];render();return}
+ document.getElementById('content').innerHTML='<div class="empty">Поиск по базе шаблонов...</div>';
+ try{
+   const rows=await fetchTemplatePages(q,null);
+   if(requestId!==searchRequestId)return;
+   searchResults=rows;
+   render();
+ }catch(error){
+   if(requestId!==searchRequestId)return;
+   searchResults=[];
+   render();
+   toast('Ошибка поиска: '+(error.message||error));
+ }
+});
 document.getElementById('loginButton')?.addEventListener('click',()=>openModal('loginOverlay'));
 document.getElementById('fBody').addEventListener('input',updateLimit);
 render();
@@ -828,8 +870,9 @@ window.importWikiItems=async()=>{
  let added=0,skipped=0,failed=0,created=0,reclassified=0,removed=0;
  const errors=[];
  try{
+  const allForImport=await fetchTemplatePages(null,null);
   const subMap=new Map(subcategories.map(s=>[s.category+'\\0'+s.name,s]));
-  const byName=new Map(templates.map(t=>[(t.category||'')+'\\0'+String(t.title||t.body||'').trim().toLowerCase(),t]));
+  const byName=new Map(allForImport.map(t=>[(t.category||'')+'\\0'+String(t.title||t.body||'').trim().toLowerCase(),t]));
   const officialClothes=wikiItems.filter(x=>x.category==='clothing'||x.category==='masks');
   const officialKeys=new Set(officialClothes.map(x=>x.category+'\\0'+String(x.name||'').trim().toLowerCase()));
   const groups=[...new Map(wikiItems.map(x=>[x.category+'\\0'+x.group_name,{category:x.category,name:x.group_name}])).values()];
@@ -858,7 +901,7 @@ window.importWikiItems=async()=>{
    out.textContent='Импорт: добавлено '+added+' | перераспределено '+reclassified+' | уже были '+skipped+' | ошибок '+failed;
   }
   if(officialClothes.length&&wikiItems.length===officialClothes.length){
-   const stale=templates.filter(t=>(t.category==='clothing'||t.category==='masks')&&!officialKeys.has((t.category||'')+'\\0'+String(t.title||t.body||'').trim().toLowerCase()));
+   const stale=allForImport.filter(t=>(t.category==='clothing'||t.category==='masks')&&!officialKeys.has((t.category||'')+'\\0'+String(t.title||t.body||'').trim().toLowerCase()));
    if(stale.length&&confirm('Wiki собрала полный каталог. Удалить '+stale.length+' старых позиций одежды/масок, которых больше нет в официальном каталоге?')){
     for(const t of stale){
      const dr=await sb.rpc('editor_delete_template',{p_template_id:t.id});
