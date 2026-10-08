@@ -127,7 +127,7 @@ body.customTheme .sectionhead h2{color:var(--user-heading,#f1f3f5)}body.customTh
 <div class="actions"><button type="button" class="cancel" onclick="closeModal('staffFormOverlay')">Отмена</button><button class="save">Создать</button></div>
 </form></div></div>
 <div class="overlay" id="themeOverlay"><div class="modal themeModal"><div class="modalhead"><h3>Внешний вид сайта</h3><button class="x" onclick="closeModal('themeOverlay')">×</button></div><div class="form">
-<div class="themeIntro">Настрой сайт полностью под себя. Все изменения сохраняются только в этом браузере и не влияют на других пользователей.</div>
+<div class="themeIntro">Настрой сайт полностью под себя. Тема доступна всем посетителям, вход не требуется. Настройки сохраняются только в этом браузере и не влияют на других пользователей.</div>
 
 <div class="themeSection"><div class="themeSectionTitle">🎨 Цвета интерфейса</div>
 <div class="themeColorRow">
@@ -168,7 +168,7 @@ body.customTheme .sectionhead h2{color:var(--user-heading,#f1f3f5)}body.customTh
 <div class="themeSection"><div class="themeSectionTitle">👁 Предпросмотр</div>
 <div class="themePreviewLarge" id="themeLivePreview"><div class="pvTop"></div><div class="pvBody"><div class="pvMain"><div class="pvTitle"></div><div class="pvLine"></div><div class="pvLine"></div><div class="pvCard"></div></div><div class="pvSide"><div></div><div></div><div></div></div></div></div></div>
 
-<div class="themeActions"><button type="button" class="cancel" onclick="resetThemeSettings()">Сбросить всё</button><button type="button" class="save" onclick="closeModal('themeOverlay')">Готово</button></div>
+<div class="themeActions"><button type="button" class="cancel" onclick="resetThemeSettings()">Сбросить всё</button><button type="button" class="save" onclick="saveAndCloseTheme()">Готово</button></div>
 </div></div></div>
 <div class="toast" id="toast">Скопировано</div>
 
@@ -370,7 +370,9 @@ async function refreshRole(){
 }
 const DEFAULT_THEME={accent:'#ff1724',text:'#f4f6f8',muted:'#aeb6be',bg:'#030507',panel:'#080d12',heading:'#f1f3f5',font:'Comfortaa',size:12,bgMode:'color',overlay:25,scale:'normal',radius:7,width:1400,spacing:14,panelOpacity:100,shadow:55,glow:true,blur:true,image:''};
 function getThemeSettings(){try{return {...DEFAULT_THEME,...JSON.parse(localStorage.getItem('weazel_theme')||'{}')}}catch(e){return {...DEFAULT_THEME}}}
-function saveThemeSettings(s){localStorage.setItem('weazel_theme',JSON.stringify(s))}
+function saveThemeSettings(s){
+ try{localStorage.setItem('weazel_theme',JSON.stringify(s));return true}catch(e){console.warn('Theme localStorage save error',e);return false}
+}
 function loadGoogleFont(font){
  if(['Arial','Georgia'].includes(font))return;
  const id='google-font-'+font.replace(/\s+/g,'-').toLowerCase();
@@ -378,26 +380,28 @@ function loadGoogleFont(font){
  const l=document.createElement('link');l.id=id;l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(font).replace(/%20/g,'+')+':wght@400;500;600;700&display=swap';document.head.appendChild(l);
 }
 function hexToRgba(hex,a){const h=hex.replace('#','');const n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'}
-function applyThemeSettings(){
+function applyThemeSettings(readForm=true){
  const s=getThemeSettings(),g=id=>document.getElementById(id);
- if(g('themeAccent'))s.accent=g('themeAccent').value;
- if(g('themeText'))s.text=g('themeText').value;
- if(g('themeMuted'))s.muted=g('themeMuted').value;
- if(g('themeBg'))s.bg=g('themeBg').value;
- if(g('themePanel'))s.panel=g('themePanel').value;
- if(g('themeHeading'))s.heading=g('themeHeading').value;
- if(g('themeFont'))s.font=g('themeFont').value;
- if(g('themeSize'))s.size=Number(g('themeSize').value);
- if(g('themeBgMode'))s.bgMode=g('themeBgMode').value;
- if(g('themeOverlayOpacity'))s.overlay=Number(g('themeOverlayOpacity').value);
- if(g('themeScale'))s.scale=g('themeScale').value;
- if(g('themeWidth'))s.width=Number(g('themeWidth').value);
- if(g('themeSpacing'))s.spacing=Number(g('themeSpacing').value);
- if(g('themeRadius'))s.radius=Number(g('themeRadius').value);
- if(g('themePanelOpacity'))s.panelOpacity=Number(g('themePanelOpacity').value);
- if(g('themeShadow'))s.shadow=Number(g('themeShadow').value);
- if(g('themeGlow'))s.glow=g('themeGlow').checked;
- if(g('themeBlur'))s.blur=g('themeBlur').checked;
+ if(readForm){
+  if(g('themeAccent'))s.accent=g('themeAccent').value;
+  if(g('themeText'))s.text=g('themeText').value;
+  if(g('themeMuted'))s.muted=g('themeMuted').value;
+  if(g('themeBg'))s.bg=g('themeBg').value;
+  if(g('themePanel'))s.panel=g('themePanel').value;
+  if(g('themeHeading'))s.heading=g('themeHeading').value;
+  if(g('themeFont'))s.font=g('themeFont').value;
+  if(g('themeSize'))s.size=Number(g('themeSize').value);
+  if(g('themeBgMode'))s.bgMode=g('themeBgMode').value;
+  if(g('themeOverlayOpacity'))s.overlay=Number(g('themeOverlayOpacity').value);
+  if(g('themeScale'))s.scale=g('themeScale').value;
+  if(g('themeWidth'))s.width=Number(g('themeWidth').value);
+  if(g('themeSpacing'))s.spacing=Number(g('themeSpacing').value);
+  if(g('themeRadius'))s.radius=Number(g('themeRadius').value);
+  if(g('themePanelOpacity'))s.panelOpacity=Number(g('themePanelOpacity').value);
+  if(g('themeShadow'))s.shadow=Number(g('themeShadow').value);
+  if(g('themeGlow'))s.glow=g('themeGlow').checked;
+  if(g('themeBlur'))s.blur=g('themeBlur').checked;
+ }
  saveThemeSettings(s);
  const root=document.documentElement;
  let bg=s.bg;
@@ -445,16 +449,17 @@ window.handleThemeImage=ev=>{
  if(file.size>1800000){toast('Изображение слишком большое, максимум 1.8 МБ');ev.target.value='';return}
  const reader=new FileReader();reader.onload=()=>{const s=getThemeSettings();s.image=reader.result;s.bgMode='image';saveThemeSettings(s);document.getElementById('themeBgMode').value='image';applyThemeSettings()};reader.readAsDataURL(file);
 };
+window.saveAndCloseTheme=()=>{const saved=saveThemeSettings(getThemeSettings());applyThemeSettings(false);closeModal('themeOverlay');toast(saved?'Настройки сохранены':'Не удалось сохранить настройки')};
 window.openThemeSettings=()=>{const s=getThemeSettings(),g=id=>document.getElementById(id);g('themeAccent').value=s.accent;g('themeText').value=s.text;g('themeMuted').value=s.muted;g('themeBg').value=s.bg;g('themePanel').value=s.panel;g('themeHeading').value=s.heading;g('themeFont').value=s.font;g('themeSize').value=s.size;g('themeBgMode').value=s.bgMode;g('themeOverlayOpacity').value=s.overlay;g('themeScale').value=s.scale;g('themeWidth').value=s.width;g('themeSpacing').value=s.spacing;g('themeRadius').value=s.radius;g('themePanelOpacity').value=s.panelOpacity;g('themeShadow').value=s.shadow;g('themeGlow').checked=s.glow;g('themeBlur').checked=s.blur;applyThemeSettings();openModal('themeOverlay')};
 window.resetThemeSettings=()=>{localStorage.removeItem('weazel_theme');const s={...DEFAULT_THEME};saveThemeSettings(s);const g=id=>document.getElementById(id);Object.entries({themeAccent:s.accent,themeText:s.text,themeMuted:s.muted,themeBg:s.bg,themePanel:s.panel,themeHeading:s.heading,themeFont:s.font,themeSize:s.size,themeBgMode:s.bgMode,themeOverlayOpacity:s.overlay,themeScale:s.scale,themeWidth:s.width,themeSpacing:s.spacing,themeRadius:s.radius,themePanelOpacity:s.panelOpacity,themeShadow:s.shadow}).forEach(([id,v])=>{if(g(id))g(id).value=v});if(g('themeBgFile'))g('themeBgFile').value='';if(g('themeGlow'))g('themeGlow').checked=s.glow;if(g('themeBlur'))g('themeBlur').checked=s.blur;applyThemeSettings();toast('Настройки внешнего вида сброшены')};
-(function initTheme(){applyThemeSettings()})();
+(function initTheme(){applyThemeSettings(false)})();
 function renderUser(){
  const e=document.getElementById('user');
  if(user){
    const editorLabel=editorMode?'Редактор ✓':'Редактор';
    e.innerHTML='<button class="login" onclick="openThemeSettings()">⚙ Тема</button>'+'<span class="role">'+esc(role||'сотрудник')+'</span>'+(canEdit()?'<button class="login" style="border-color:'+(editorMode?'#ff2632':'#333c46')+';background:'+(editorMode?'#18090c':'#080c10')+'" onclick="openEditorMenu()">'+editorLabel+'</button>':'')+'<button class="logout" onclick="logout()">Выйти</button>';
  } else {
-   e.innerHTML='<button class="login" onclick="openModal(\'loginOverlay\')">Вход для редакторов</button>';
+   e.innerHTML='<button class="login" onclick="openThemeSettings()">⚙ Тема</button><button class="login" onclick="openModal(\'loginOverlay\')">Вход для редакторов</button>';
  }
  updateEditorMenu();
 }
