@@ -443,7 +443,15 @@ function renderUser(){
  }
  updateEditorMenu();
 }
-window.openEditorMenu=()=>{if(!user||!canEdit())return;updateEditorMenu();openModal('editorOverlay')};
+window.ensureImportButton=()=>{
+ const actions=document.querySelector('#editorOverlay .actions');
+ if(!actions||document.getElementById('bulkImportBtn'))return;
+ const b=document.createElement('button');
+ b.id='bulkImportBtn';b.className='save';b.type='button';b.textContent='📥 Импорт шаблонов';
+ b.onclick=()=>openModal('bulkImportOverlay');
+ actions.insertBefore(b,actions.firstChild);
+};
+window.openEditorMenu=()=>{if(!user||!canEdit())return;updateEditorMenu();ensureImportButton();openModal('editorOverlay')};
 function updateEditorMenu(){
  const title=document.getElementById('editorModeTitle'),textEl=document.getElementById('editorModeText'),btn=document.getElementById('editorToggle');
  if(!title||!textEl||!btn)return;
@@ -835,6 +843,64 @@ toggleCodeFields(activeCategory);
 load().catch(e=>console.error('Initial data load error',e));
 refreshRole().catch(e=>console.error('Initial auth load error',e));
 startEditorChangeFeed();
-</script>
-</body>
+window.importPastedTemplates=async()=>{
+ if(!canEditUI()||!canManageStaff()){toast('Импорт доступен только создателю и главному администратору');return}
+ const out=document.getElementById('bulkImportProgress'),raw=document.getElementById('bulkImportText')?.value||'';
+ if(!raw.trim()){out.textContent='Вставь список шаблонов';return}
+ const clean=s=>s.replace(/<br\\s*\\/?>(?=\\s|$)/gi,' ').replace(/\\u00a0/g,' ').replace(/&#x9;/g,'').replace(/^\\s*\\|/,'').replace(/\\|\\s*$/,'').trim();
+ const lines=raw.split(/\\r?\\n/).map(clean).filter(Boolean);
+ const known=new Set(categorySubcategories('current').map(x=>x.name));
+ const aliases={
+  'контракты':'Контракты, поиск людей','трудоустройство':'Трудоустройство','организации':'Организации',
+  'мероприятия':'Мероприятия','тусовки, клубы':'Тусовки, клубы','клубные задания':'Клубные задания',
+  'приветы и пожелания/поиск людей':'Приветы и пожелания/поиск людей','бизнесы':'Бизнесы',
+  'квартира':'Квартира','дом':'Дом','особняк':'Особняк','обмен':'Обмен','аренда жилья':'Аренда жилья',
+  'сокровища':'Сокровища','номера':'Номера','разное':'Разное','другое':'Разное'
+ };
+ const normalizeGroup=s=>aliases[s.toLowerCase().replace(/:$/,'').trim()]||s.trim();
+ const heading=/^\\*\\*([^*]+)\\*\\*:?$|^:?[A-Za-zА-Яа-яЁё/ ,_-]{3,60}:?$/.exec('');
+ let group='Разное',items=[];
+ for(const line0 of lines){
+  let line=line0.replace(/^[-*•]+\\s*/,'').trim();
+  if(!line)continue;
+  const bold=line.match(/^\\*\\*([^*]+)\\*\\*:?$/);
+  if(bold){const g=normalizeGroup(bold[1]);if(known.has(g)||g==='Контракты, поиск людей'||g==='Разное')group=g;continue}
+  const plain=normalizeGroup(line.replace(/^:+|:$/g,'').trim());
+  if(known.has(plain)&&!/[.!?]/.test(line)){group=plain;continue}
+  if(line.startsWith('---')||line==='Недвижимость')continue;
+  if(line==='Квартира'||line==='Дом'||line==='Особняк'||line==='Обмен'||line==='Аренда жилья') {group=line;continue}
+  if(line.length>2)items.push({group,body:line});
+ }
+ if(!items.length){out.textContent='Не найдено ни одного шаблона';return}
+ out.textContent='Подготовлено: '+items.length+'. Импорт...';
+ let added=0,skipped=0,errors=[];
+ const existing=new Set(templates.filter(t=>t.category==='current').map(t=>(t.group_name||'')+'\\0'+(t.body||'')));
+ for(const x of items){
+  if(!known.has(x.group)){x.group='Разное'}
+  const key=x.group+'\\0'+x.body;
+  if(existing.has(key)){skipped++;continue}
+  const n=weightedLength(x.body),bad=validEmoji(x.body);
+  if(n>120||bad){errors.push(x.body+' ['+(n>120?'лимит 120':'недопустимый эмодзи')+']');continue}
+  const {error}=await sb.rpc('editor_save_template',{p_template_id:null,p_category:'current',p_title:'',p_codeword:'',p_body:x.body,p_expires_on:null,p_client_contact:'',p_group_name:x.group,p_permanent:true,p_variants:[],p_sort_order:0,p_license_active:true,p_license_expires_on:null});
+  if(error)errors.push(x.body+' ['+error.message+']');else{added++;existing.add(key)}
+  if((added+skipped+errors.length)%10===0)out.textContent='Импорт: '+(added+skipped+errors.length)+' / '+items.length;
+ }
+ await load();
+ out.textContent='Готово: добавлено '+added+', пропущено '+skipped+', ошибок '+errors.length+'.';
+ if(errors.length)out.textContent+=' Первые ошибки: '+errors.slice(0,3).join(' | ');
+ toast('Импорт завершён: '+added+' добавлено');
+};</script>
+<div class="overlay" id="bulkImportOverlay">
+<div class="modal" style="width:min(900px,100%)">
+ <div class="modalhead"><h3>📥 Массовый импорт шаблонов</h3><button class="x" type="button" onclick="closeModal('bulkImportOverlay')">×</button></div>
+ <div class="form">
+  <div class="themeIntro">Вставь сюда таблицу с шаблонами целиком. Сайт сам уберёт разметку Markdown, пустые строки и распределит шаблоны по подразделам.</div>
+  <div class="field full"><label>Список шаблонов</label><textarea id="bulkImportText" style="min-height:360px" placeholder="Вставь сюда весь список из сообщения..."></textarea></div>
+  <div id="bulkImportProgress" class="error"></div>
+  <div class="actions">
+   <button class="cancel" type="button" onclick="closeModal('bulkImportOverlay')">Отмена</button>
+   <button class="save" type="button" onclick="importPastedTemplates()">Импортировать всё</button>
+  </div>
+ </div>
+</div></div></body>
 </html>
