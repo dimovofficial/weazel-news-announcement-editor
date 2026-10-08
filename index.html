@@ -58,6 +58,8 @@ body.customTheme .copy button,body.customTheme .simpleActions button.editTemplat
 @media(max-width:800px){.themeColorRow,.themeSliderRow{grid-template-columns:1fr}.themeControlWide{grid-column:auto}}
 
 body.customTheme{background:var(--user-bg,#030507)!important;color:var(--user-text,#f4f6f8)!important;font-family:var(--user-font,Comfortaa),Arial,sans-serif!important;font-size:var(--user-size,12px)!important}body.customTheme .sectionhead h2{color:var(--user-heading,#f1f3f5)}body.customTheme .hero h1{color:var(--user-heading,#f4f6f8)}body.customTheme .hero h1 span{color:var(--user-accent,#ff1724)}body.customTheme .hero p,body.customTheme .sideHint,body.customTheme .meta,body.customTheme .cell{font-size:calc(var(--user-size,12px)*.82)}body.customTheme .topnav button,body.customTheme .login,body.customTheme .logout,body.customTheme .search,body.customTheme .searchResult,body.customTheme .simpleBody,body.customTheme .body{font-size:calc(var(--user-size,12px)*.85)}body.customTheme .sectionhead h2{font-size:calc(var(--user-size,12px)*1.9)}body.customTheme .subhead h3{font-size:calc(var(--user-size,12px)*1.3)}body.customTheme .subsection,body.customTheme .simpleTemplate,body.customTheme .side{box-shadow:0 var(--user-shadow,10px) calc(var(--user-shadow,10px)*2) rgba(0,0,0,.35)}body.customTheme .top,body.customTheme .toolbar{backdrop-filter:blur(var(--user-blur,12px))}body.customTheme .layout{gap:var(--user-spacing,14px)}body.customTheme .subsection{margin-bottom:var(--user-spacing,14px)}body.customTheme .cell{padding-top:calc(var(--user-spacing,14px)*.7);padding-bottom:calc(var(--user-spacing,14px)*.7)}body.customTheme .heroStats{border-color:var(--user-border,#242a31)}body.customTheme .themeControl input[type=range]{accent-color:var(--user-accent,#ff1724)}
+
+.changeNotice{position:fixed;right:20px;top:84px;width:min(430px,calc(100vw - 28px));z-index:260;background:#0b1015;border:1px solid #ff2632;border-radius:10px;box-shadow:0 18px 55px #000c;padding:15px;display:none}.changeNotice.show{display:block}.changeNoticeTitle{font-size:12px;font-weight:800;color:#fff}.changeNoticeText{color:#aeb7bf;font-size:9px;line-height:1.45;margin-top:5px}.changeNoticeList{margin:10px 0 12px;padding:0;list-style:none;max-height:170px;overflow:auto;border-top:1px solid #202831;border-bottom:1px solid #202831}.changeNoticeList li{padding:7px 0;color:#e8edf1;font-size:9px;border-bottom:1px solid #171e24}.changeNoticeActions{display:flex;justify-content:flex-end;gap:7px}.changeNoticeActions button{border-radius:6px;padding:8px 11px;font-size:8px;font-weight:700;cursor:pointer}.changeNoticeClose{background:#11171c;border:1px solid #303943;color:#aeb7bf}.changeNoticeApply{background:#ff1724;border:1px solid #ff3540;color:#fff}
 </style>
 </head>
 <body>
@@ -711,6 +713,66 @@ window.deleteTemplate=async()=>{
  const {error}=await sb.rpc('editor_delete_template',{p_template_id:editingId});if(error){document.getElementById('saveError').textContent=error.message;return}
  closeModal('editOverlay');await load();toast('Шаблон удалён');
 };
+
+// Background editor change feed
+let changeCursor=new Date().toISOString();
+let pendingEditorChanges=[];
+let changePollTimer=null;
+let changeNoticeEl=null;
+function ensureChangeNotice(){
+ if(changeNoticeEl)return changeNoticeEl;
+ changeNoticeEl=document.createElement('div');
+ changeNoticeEl.className='changeNotice';
+ changeNoticeEl.innerHTML='<div class="changeNoticeTitle">🔄 Доступно обновление</div><div class="changeNoticeText">В редакторе появились изменения.</div><ul class="changeNoticeList"></ul><div class="changeNoticeActions"><button class="changeNoticeClose" type="button">Позже</button><button class="changeNoticeApply" type="button">Обновить страницу</button></div>';
+ document.body.appendChild(changeNoticeEl);
+ changeNoticeEl.querySelector('.changeNoticeClose').onclick=()=>changeNoticeEl.classList.remove('show');
+ changeNoticeEl.querySelector('.changeNoticeApply').onclick=applyEditorChanges;
+ return changeNoticeEl;
+}
+function changeDescription(c){
+ const d=c.after_data||c.before_data||{};
+ const action={create:'Добавлено',update:'Изменено',delete:'Удалено'}[c.action]||'Изменено';
+ const type=c.target_type==='subcategory'?'подразделение':'шаблон';
+ const name=d.codeword||d.title||d.name||d.body||('№'+c.target_id);
+ return action+' '+type+': '+name+(d.group_name?' · '+d.group_name:'');
+}
+function showEditorChanges(changes){
+ if(!changes.length)return;
+ pendingEditorChanges=[...pendingEditorChanges,...changes].slice(-20);
+ const box=ensureChangeNotice();
+ box.querySelector('.changeNoticeList').innerHTML=pendingEditorChanges.slice(-8).reverse().map(c=>'<li>'+esc(changeDescription(c))+'</li>').join('');
+ box.querySelector('.changeNoticeText').textContent='Появились новые изменения. Ваша текущая работа пока не затронута.';
+ box.classList.add('show');
+}
+function captureUiState(){
+ return {scrollY:window.scrollY,activeCategory,search:document.getElementById('search')?.value||'',expanded:[...document.querySelectorAll('.subsection:not(.collapsed)')].map(x=>x.id)};
+}
+async function applyEditorChanges(){
+ const box=ensureChangeNotice(),state=captureUiState(),oldCursor=changeCursor;
+ box.classList.remove('show');pendingEditorChanges=[];changeCursor=new Date().toISOString();
+ try{await load();restoreUiState(state);toast('Данные обновлены без перезагрузки страницы')}
+ catch(e){changeCursor=oldCursor;showEditorChanges([{action:'update',target_type:'template',target_id:'',before_data:null,after_data:{title:'Ошибка обновления'}}])}
+}
+function restoreUiState(state){
+ activeCategory=state.activeCategory||activeCategory;
+ const search=document.getElementById('search');if(search)search.value=state.search||'';
+ render();
+ (state.expanded||[]).forEach(id=>document.getElementById(id)?.classList.remove('collapsed'));
+ requestAnimationFrame(()=>window.scrollTo({top:state.scrollY||0,behavior:'instant'}));
+}
+async function pollEditorChanges(){
+ try{
+  const r=await withTimeout(sb.rpc('editor_changes_since',{p_since:changeCursor}),7000);
+  if(r.error)throw new Error(r.error.message);
+  const changes=Array.isArray(r.data)?r.data:[];
+  if(changes.length){changeCursor=changes[changes.length-1].created_at||new Date().toISOString();showEditorChanges(changes)}
+ }catch(e){console.warn('Editor change feed error',e)}
+}
+function startEditorChangeFeed(){
+ if(changePollTimer)clearInterval(changePollTimer);
+ ensureChangeNotice();changePollTimer=setInterval(pollEditorChanges,8000);setTimeout(pollEditorChanges,2500);
+}
+
 const searchToolbar=document.getElementById('searchToolbar');
 const searchPinSpacer=document.getElementById('searchPinSpacer');
 let searchPinTop=0;
@@ -772,6 +834,7 @@ fillGroups(categorySubcategories(activeCategory)[0]?.name||'');
 toggleCodeFields(activeCategory);
 load().catch(e=>console.error('Initial data load error',e));
 refreshRole().catch(e=>console.error('Initial auth load error',e));
+startEditorChangeFeed();
 </script>
 </body>
 </html>
