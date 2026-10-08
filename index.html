@@ -814,7 +814,57 @@ window.setupWikiBookmarklet=()=>{
  a.href='javascript:'+src
 };
 window.addEventListener('message',e=>{if(!e.data||e.data.type!=='WEAZEL_WIKI_IMPORT'||!Array.isArray(e.data.items))return;if(window.wikiImportWindow&&e.source!==window.wikiImportWindow)return;const incoming=e.data.items;const map=new Map(window.wikiItems.map(x=>[x.category+'\0'+String(x.name||'').trim().toLowerCase(),x]));incoming.forEach(x=>map.set(x.category+'\0'+String(x.name||'').trim().toLowerCase(),x));window.wikiItems=[...map.values()];const counts={};window.wikiItems.forEach(x=>{const k=x.category+'/'+x.group_name;counts[k]=(counts[k]||0)+1});document.getElementById('wikiSyncSummary').innerHTML='<strong>Получено: '+window.wikiItems.length+'</strong><br>'+Object.entries(counts).map(([k,n])=>esc(k)+': '+n).join('<br>');document.getElementById('wikiSyncPreview').innerHTML='<br><strong>Последний сбор:</strong> '+esc(e.data.source)+' · страниц: '+esc(e.data.pages)+' · записей: '+incoming.length+'<br><br>'+incoming.slice(0,16).map(x=>esc(x.name)+' → '+esc(x.category)+' / '+esc(x.group_name)).join('<br>')+(incoming.length>16?'<br>…':'');document.getElementById('wikiImportBtn').style.display=window.wikiItems.length?'':'none';toast('Wiki: получено '+incoming.length+' записей')});
-window.importWikiItems=async()=>{if(!wikiItems.length)return;const out=document.getElementById('wikiSyncSummary'),err=document.getElementById('wikiSyncError'),btn=document.getElementById('wikiImportBtn');btn.disabled=true;err.textContent='';let added=0,skipped=0,failed=0,created=0,reclassified=0;const errors=[];try{const subMap=new Map(subcategories.map(s=>[s.category+'\0'+s.name,s]));const byName=new Map(templates.map(t=>[(t.category||'')+'\0'+String(t.title||t.body||'').trim().toLowerCase(),t]));const uniqueGroups=[...new Map(wikiItems.map(x=>[x.category+'\0'+x.group_name,{category:x.category,name:x.group_name}])).values()];for(const g of uniqueGroups){const key=g.category+'\0'+g.name;if(subMap.has(key))continue;const sr=await sb.rpc('editor_save_subcategory',{p_subcategory_id:null,p_category:g.category,p_name:g.name,p_sort_order:0});if(sr.error){const fresh=await sb.rpc('editor_subcategories',{p_category:g.category});(fresh.data||[]).forEach(s=>subMap.set(s.category+'\0'+s.name,s));if(!subMap.has(key))throw new Error('Подраздел «'+g.name+'»: '+sr.error.message)}else{subMap.set(key,{category:g.category,name:g.name});created++}}for(const x of wikiItems){try{const key=x.category+'\0'+String(x.name||'').trim().toLowerCase();const existing=byName.get(key);if(existing){if((existing.group_name||'')!==x.group_name){const args={p_template_id:existing.id,p_category:x.category,p_title:existing.title||x.name,p_codeword:existing.codeword||'',p_body:existing.body||x.name,p_expires_on:existing.expires_on||null,p_client_contact:existing.client_contact||'',p_group_name:x.group_name,p_permanent:existing.permanent!==false,p_variants:existing.variants||[],p_sort_order:existing.sort_order||0,p_license_active:existing.license_active!==false,p_license_expires_on:existing.license_expires_on||null};const rr=await sb.rpc('editor_save_template',args);if(rr.error)throw new Error(rr.error.message);existing.group_name=x.group_name;reclassified++}else skipped++;continue}const args={p_template_id:null,p_category:x.category,p_title:x.name,p_codeword:'',p_body:x.name,p_expires_on:null,p_client_contact:'',p_group_name:x.group_name,p_permanent:true,p_variants:[],p_sort_order:0,p_license_active:true,p_license_expires_on:null};const tr=await sb.rpc('editor_save_template',args);if(tr.error)throw new Error(tr.error.message);added++;byName.set(key,{id:tr.data?.id,title:x.name,body:x.name,group_name:x.group_name,category:x.category})}catch(e){failed++;if(errors.length<8)errors.push(x.name+': '+(e.message||e))}out.textContent='Импорт: добавлено '+added+' | перераспределено '+reclassified+' | уже были '+skipped+' | создано подразделов '+created+' | ошибок '+failed}await load();out.textContent='Готово. Добавлено: '+added+', перераспределено: '+reclassified+', уже были: '+skipped+', создано подразделений: '+created+', ошибок: '+failed+'.';err.innerHTML=errors.length?'<strong>Первые ошибки:</strong><br>'+errors.map(esc).join('<br>'):'';toast(failed?'Wiki: добавлено '+added+', перераспределено '+reclassified+', ошибок '+failed:'Wiki синхронизирована: '+added+' новых, перераспределено '+reclassified)}catch(e){err.textContent=e.message||String(e)}finally{btn.disabled=false}};
+window.importWikiItems=async()=>{
+ if(!wikiItems.length)return;
+ const out=document.getElementById('wikiSyncSummary'),err=document.getElementById('wikiSyncError'),btn=document.getElementById('wikiImportBtn');
+ btn.disabled=true;err.textContent='';
+ let added=0,skipped=0,failed=0,created=0,reclassified=0,removed=0;
+ const errors=[];
+ try{
+  const subMap=new Map(subcategories.map(s=>[s.category+'\\0'+s.name,s]));
+  const byName=new Map(templates.map(t=>[(t.category||'')+'\\0'+String(t.title||t.body||'').trim().toLowerCase(),t]));
+  const officialClothes=wikiItems.filter(x=>x.category==='clothing'||x.category==='masks');
+  const officialKeys=new Set(officialClothes.map(x=>x.category+'\\0'+String(x.name||'').trim().toLowerCase()));
+  const groups=[...new Map(wikiItems.map(x=>[x.category+'\\0'+x.group_name,{category:x.category,name:x.group_name}])).values()];
+  for(const g of groups){
+   const key=g.category+'\\0'+g.name;
+   if(subMap.has(key))continue;
+   const sr=await sb.rpc('editor_save_subcategory',{p_subcategory_id:null,p_category:g.category,p_name:g.name,p_sort_order:0});
+   if(sr.error)throw new Error('Подраздел «'+g.name+'»: '+sr.error.message);
+   subMap.set(key,{category:g.category,name:g.name});created++;
+  }
+  for(const x of wikiItems){
+   try{
+    const key=x.category+'\\0'+String(x.name||'').trim().toLowerCase(),existing=byName.get(key);
+    if(existing){
+     if((existing.group_name||'')!==x.group_name){
+      const args={p_template_id:existing.id,p_category:x.category,p_title:existing.title||x.name,p_codeword:existing.codeword||'',p_body:existing.body||x.name,p_expires_on:existing.expires_on||null,p_client_contact:existing.client_contact||'',p_group_name:x.group_name,p_permanent:existing.permanent!==false,p_variants:existing.variants||[],p_sort_order:existing.sort_order||0,p_license_active:existing.license_active!==false,p_license_expires_on:existing.license_expires_on||null};
+      const rr=await sb.rpc('editor_save_template',args);if(rr.error)throw new Error(rr.error.message);
+      existing.group_name=x.group_name;existing.category=x.category;reclassified++;
+     }else skipped++;
+     continue;
+    }
+    const args={p_template_id:null,p_category:x.category,p_title:x.name,p_codeword:'',p_body:x.name,p_expires_on:null,p_client_contact:'',p_group_name:x.group_name,p_permanent:true,p_variants:[],p_sort_order:0,p_license_active:true,p_license_expires_on:null};
+    const tr=await sb.rpc('editor_save_template',args);if(tr.error)throw new Error(tr.error.message);
+    added++;byName.set(key,{id:tr.data?.id,title:x.name,body:x.name,group_name:x.group_name,category:x.category});
+   }catch(e){failed++;if(errors.length<10)errors.push(x.name+': '+(e.message||e))}
+   out.textContent='Импорт: добавлено '+added+' | перераспределено '+reclassified+' | уже были '+skipped+' | ошибок '+failed;
+  }
+  if(officialClothes.length&&wikiItems.length===officialClothes.length){
+   const stale=templates.filter(t=>(t.category==='clothing'||t.category==='masks')&&!officialKeys.has((t.category||'')+'\\0'+String(t.title||t.body||'').trim().toLowerCase()));
+   if(stale.length&&confirm('Wiki собрала полный каталог. Удалить '+stale.length+' старых позиций одежды/масок, которых больше нет в официальном каталоге?')){
+    for(const t of stale){
+     const dr=await sb.rpc('editor_delete_template',{p_template_id:t.id});
+     if(!dr.error)removed++;else if(errors.length<10)errors.push(t.title+': '+dr.error.message);
+    }
+   }
+  }
+  await load();
+  out.textContent='Готово. Добавлено: '+added+', перераспределено: '+reclassified+', уже были: '+skipped+', удалено старых: '+removed+', создано подразделений: '+created+', ошибок: '+failed+'.';
+  err.innerHTML=errors.length?'<strong>Первые ошибки:</strong><br>'+errors.map(esc).join('<br>'):'';
+  toast(failed?'Wiki: добавлено '+added+', перераспределено '+reclassified+', ошибок '+failed:'Wiki синхронизирована: '+added+' новых, перераспределено '+reclassified+'');
+ }catch(e){err.textContent=e.message||String(e)}finally{btn.disabled=false}
+};
 window.setupWikiBookmarklet();</script>
 </body>
 </html>
