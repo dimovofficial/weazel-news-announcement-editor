@@ -74,9 +74,9 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 </form></div></div>
 
 <div class="overlay" id="subsectionOverlay"><div class="modal loginbox"><div class="modalhead"><h3 id="subModalTitle">Новое подразделение</h3><button class="x" onclick="closeModal('subsectionOverlay')">×</button></div><form class="form" onsubmit="saveSubsection(event)"><div class="field"><label>Раздел</label><select id="subCategory"></select></div><div class="field"><label>Название подраздела</label><input id="subName" required maxlength="100"><input type="hidden" id="subEditId"></div><div id="subError" class="error"></div><div class="actions"><button type="button" class="cancel" onclick="closeModal('subsectionOverlay')">Отмена</button><button class="save">Создать</button></div></form></div></div>
-<div class="overlay" id="staffOverlay"><div class="modal"><div class="modalhead"><h3>Сотрудники и доступ</h3><button class="x" onclick="closeModal('staffOverlay')">×</button></div><div class="form">
+<div class="overlay" id="staffOverlay"><div class="modal"><div class="modalhead"><h3>Администраторы и доступ</h3><button class="x" onclick="closeModal('staffOverlay')">×</button></div><div class="form">
 <div id="staffList" class="stafflist"><div class="empty">Загрузка...</div></div>
-<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="save" type="button" onclick="openStaffForm()">＋ Добавить сотрудника</button></div>
+<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="save" type="button" onclick="openStaffForm()">＋ Добавить администратора</button></div>
 </div></div></div>
 <div class="overlay" id="staffFormOverlay"><div class="modal loginbox"><div class="modalhead"><h3>Новый администратор</h3><button class="x" onclick="closeModal('staffFormOverlay')">×</button></div><form class="form" onsubmit="createStaff(event)">
 <div class="field"><label>Логин</label><input id="staffUsername" required></div>
@@ -210,13 +210,13 @@ function canManageStaff(){return role==='creator'||role==='senior_admin'}
 window.openStaff=async()=>{
  if(!canEditUI())return;
  openModal('staffOverlay');
- const list=document.getElementById('staffList');list.innerHTML='<div class="empty">Загрузка сотрудников...</div>';
+ const list=document.getElementById('staffList');list.innerHTML='<div class="empty">Загрузка администраторов...</div>';
  try{
    const r=await withTimeout(sb.rpc('list_admin_management'),7000);if(r.error)throw new Error(r.error.message);
    const rows=Array.isArray(r.data)?r.data:[];
-   if(!rows.length){list.innerHTML='<div class="empty">Сотрудников пока нет.</div>';return}
+   if(!rows.length){list.innerHTML='<div class="empty">Администраторов пока нет.</div>';return}
    list.innerHTML='<div class="staffrow head"><div>Имя</div><div>Логин</div><div>Discord</div><div>Роль</div></div>'+
-   rows.map(a=>{const rn=a.staff_role==='creator'?'Создатель':a.staff_role==='senior_admin'?'Главный администратор':a.staff_role==='admin'?'Администратор':'Сотрудник';
+   rows.map(a=>{const rn=a.staff_role==='creator'?'Создатель':a.staff_role==='senior_admin'?'Главный администратор':a.staff_role==='admin'?'Администратор':'Неизвестная роль';
      const c=(a.staff_role!=='creator'&&canManageStaff())?'<button class="cancel" style="padding:6px 8px;margin:3px" onclick="changeStaffRole(\''+a.user_id+'\',\''+a.staff_role+'\')">Роль</button><button class="danger" style="padding:6px 8px" onclick="removeStaff(\''+a.user_id+'\')">Удалить</button>':'';
      return '<div class="staffrow"><div>'+esc(a.display_name||a.username)+'</div><div>'+esc(a.username||'—')+'</div><div>'+esc(a.discord_name||'—')+'</div><div class="staffrole">'+esc(rn)+' '+c+'</div></div>'
    }).join('');
@@ -235,7 +235,7 @@ window.changeStaffRole=async(id,current)=>{
  try{const r=await withTimeout(sb.rpc('set_staff_role',{p_user_id:id,p_role:next.trim().toLowerCase()}),7000);if(r.error)throw new Error(r.error.message);await window.openStaff();toast('Роль изменена')}catch(e){toast(e.message)}
 };
 window.removeStaff=async id=>{
- if(!canManageStaff()||!confirm('Удалить доступ этого сотрудника?'))return;
+ if(!canManageStaff()||!confirm('Удалить доступ этого администратора?'))return;
  try{const r=await withTimeout(sb.rpc('remove_staff_account',{p_user_id:id}),7000);if(r.error)throw new Error(r.error.message);await window.openStaff();toast('Доступ удалён')}catch(e){toast(e.message)}
 };
 
@@ -360,7 +360,7 @@ function render(){
  const letter=document.getElementById('search').dataset.letter||'';
  const map=sectionGroups();
  const nav=document.getElementById('topnav');
- nav.innerHTML=CATEGORIES.map(cat=>'<button class="'+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')">'+esc(cat.name)+'</button>').join('')+(canEditUI()?'<button onclick="openStaff()">Сотрудники</button>':'');
+ nav.innerHTML=CATEGORIES.map(cat=>'<button class="'+(cat.slug===activeCategory?'active':'')+'" onclick="selectCategory(\''+cat.slug+'\')">'+esc(cat.name)+'</button>').join('')+(canEditUI()?'<button onclick="openStaff()">Администраторы</button>':'');
  const side=document.getElementById('sideNav');
  side.innerHTML=CATEGORIES.map(cat=>{
    const active=cat.slug===activeCategory;
@@ -405,7 +405,7 @@ function codesSectionHTML(cat,items){
      ? items.filter(t=>isExpired(t))
      : items.filter(t=>(t.group_name||'')===g.name&&!isExpired(t));
    const icon=isDeactivated?'⛔':['♟','♣','◉','♟','◆','•••'][i%6];
-   html+='<div class="subsection collapsed '+(isDeactivated?'deactivatedSection':'')+'" id="group-'+g.id+'"><div class="subhead" onclick="toggleSubsection(event,'+g.id+')"><span style="font-size:19px;color:#fff">'+icon+'</span><h3>'+esc(g.name)+'</h3><span>'+list.length+' поз.</span>'+((canEditUI()&&!isDeactivated)?'<button class="add" onclick="event.stopPropagation();openNew(\'codes\',\''+esc(g.name).replace(/'/g,"\\'")+'\')">＋ Добавить шаблон</button>':'')+(canEditUI()?'<button class="add subEditBtn" onclick="event.stopPropagation();openSubsectionEdit('+g.id+')">Изм. подраздел</button>':'')+(canManageStaff()?'<button class="add subEditBtn subDeleteBtn" onclick="event.stopPropagation();deleteSubsection('+g.id+')">Удалить</button>':'')+'</div>'+templateTable(list,'codes')+'</div>';
+   html+='<div class="subsection collapsed '+(isDeactivated?'deactivatedSection':'')+'" id="group-'+g.id+'"><div class="subhead" onclick="toggleSubsection(event,'+g.id+')"><span style="font-size:19px;color:#fff">'+icon+'</span><h3>'+esc(g.name)+'</h3><span>'+list.length+' поз.</span>'+((canEditUI()&&!isDeactivated)?'<button class="add" onclick="event.stopPropagation();openNew(\'codes\',\''+esc(g.name).replace(/'/g,"\\'")+'\')">＋ Добавить шаблон</button>':'')+(canEditUI()?'<button class="add subEditBtn" onclick="event.stopPropagation();openSubsectionEdit('+g.id+')">Изм. подраздел</button>':'')+(canEditUI()&&canManageStaff()?'<button class="add subEditBtn subDeleteBtn" onclick="event.stopPropagation();deleteSubsection('+g.id+')">Удалить</button>':'')+'</div>'+templateTable(list,'codes')+'</div>';
  });
  return html+'</section>';
 }
