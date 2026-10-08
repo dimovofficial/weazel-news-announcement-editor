@@ -19,7 +19,29 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .editorMenu{width:min(520px,100%)}.editorStatus{border:1px solid #2b333b;border-radius:8px;background:#070a0d;padding:16px;margin-bottom:14px}.editorStatus strong{display:block;font-size:13px;margin-bottom:6px}.editorStatus span{color:#7f8992;font-size:9px;line-height:1.5}.editorToggle{width:100%;border:1px solid #ff2632;background:linear-gradient(180deg,#ff1d2a,#d80915);color:#fff;border-radius:7px;padding:13px;font-size:10px;font-weight:700}.editorToggle.off{border-color:#343c45;background:#11161b;color:#e8edf1}.editorInfo{margin-top:10px;color:#69737c;font-size:8px;line-height:1.5}
 @media(max-width:1100px){.brand{width:160px}.brand>div:last-child{display:none}.topnav button{padding:11px 9px}.layout{grid-template-columns:1fr}.side{display:none}.heroStats{right:18px}.stat{min-width:110px;padding:7px 10px}}
 @media(max-width:800px){.top{height:62px;padding:0 10px}.brand{width:92px}.mark{width:74px;height:44px;font-size:15px}.mark:after{font-size:14px}.topnav{display:none}.user{margin-left:auto}.hero{padding:16px 16px 12px;min-height:190px}.hero h1{font-size:28px}.heroStats{position:relative!important;right:auto;bottom:auto;margin-top:13px;width:max-content;max-width:100%;overflow:auto}.stat{min-width:105px}.toolbar{top:62px;padding:10px 16px}.layout{padding:8px 10px 50px}.row{grid-template-columns:100px minmax(0,1fr) 90px}.cell{padding:10px 8px}.body{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .contact,.row .date{display:none}.subhead .add{padding:8px 9px}.grid{grid-template-columns:1fr}}
-.toolbar.searchPinned{position:fixed;left:0;right:0;top:70px;z-index:95;padding:10px 32px;background:rgba(5,8,11,.98);border-bottom:1px solid #343d46;box-shadow:0 12px 28px #000b;backdrop-filter:blur(14px)}.toolbar.searchPinned .searchWrap{max-width:none}.toolbar.searchPinned .search{height:42px}.searchPinSpacer{display:none;height:66px}.searchPinSpacer.on{display:block}@media(max-width:800px){.toolbar.searchPinned{top:62px;padding:8px 10px}.searchPinSpacer.on{height:60px}}.fullTextTooltip{position:fixed;z-index:9999;display:none;max-width:min(720px,calc(100vw - 28px));padding:12px 14px;border:1px solid #ff2632;border-radius:8px;background:#080c10;color:#f4f6f8;font-size:11px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 14px 40px #000c,0 0 18px #ff172433;pointer-events:none}.fullTextTooltip.show{display:block}</style>
+.toolbar.searchPinned{position:fixed;left:0;right:0;top:70px;z-index:95;padding:10px 32px;background:rgba(5,8,11,.98);border-bottom:1px solid #343d46;box-shadow:0 12px 28px #000b;backdrop-filter:blur(14px)}.toolbar.searchPinned .searchWrap{max-width:none}.toolbar.searchPinned .search{height:42px}.searchPinSpacer{display:none;height:66px}.searchPinSpacer.on{display:block}@media(max-width:800px){.toolbar.searchPinned{top:62px;padding:8px 10px}.searchPinSpacer.on{height:60px}}.fullTextTooltip{position:fixed;z-index:9999;display:none;max-width:min(720px,calc(100vw - 28px));padding:12px 14px;border:1px solid #ff2632;border-radius:8px;background:#080c10;color:#f4f6f8;font-size:11px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 14px 40px #000c,0 0 18px #ff172433;pointer-events:none}.fullTextTooltip.show{display:block}
+/* User theme customization */
+.themeModal{width:min(560px,100%)}
+.themeGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.themeCard{border:1px solid #29323a;background:#0a0f14;border-radius:9px;padding:13px;cursor:pointer;text-align:left;color:#e8edf1}
+.themeCard:hover{border-color:#596572}.themeCard.active{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 0 18px rgba(255,23,36,.16)}
+.themePreview{height:38px;border-radius:6px;margin-bottom:9px;border:1px solid #303943;background:linear-gradient(90deg,#080b0f 0 65%,#ff1724 65%)}
+.themeCard strong{display:block;font-size:10px}.themeCard small{display:block;color:#7e8791;font-size:8px;margin-top:4px;line-height:1.4}
+.themeOptions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}.themeOptions label{display:block;color:#8b949d;font-size:8px;text-transform:uppercase;letter-spacing:1px}.themeOptions select,.themeOptions input[type=color]{width:100%;margin-top:6px;height:38px;background:#070a0d;border:1px solid #2a333b;color:#fff;border-radius:6px;padding:6px}.themeOptions input[type=range]{width:100%;margin-top:13px;accent-color:var(--red)}
+body.theme-light{background:linear-gradient(180deg,#f1f4f7,#e4e8ec);color:#182027}
+body.theme-light:before{display:none}body.theme-light .top,body.theme-light .toolbar{background:rgba(244,247,249,.96);border-color:#cbd3da;box-shadow:0 8px 24px #0002}
+body.theme-light .topnav button{color:#4b5660}body.theme-light .topnav button:hover{background:#e7ebef;color:#111}
+body.theme-light .hero{background:linear-gradient(90deg,#eef2f5,#dce3e8,#f1e7e9);border-color:#cbd3da}
+body.theme-light .hero p{color:#53606b}body.theme-light .heroStats{background:#ffffffdd;border-color:#cbd3da}body.theme-light .stat{border-color:#d5dbe0}
+body.theme-light .search{background:#fff;color:#172028;border-color:#bfc8d0}body.theme-light .searchResults{background:#fff;border-color:#c8d0d7}body.theme-light .searchResult{color:#26323b;border-color:#e0e4e8}body.theme-light .searchResult:hover{background:#f1f4f6}
+body.theme-light .subsection,body.theme-light .simpleTemplate,body.theme-light .table,body.theme-light .simpleTemplates{background:#f7f9fa;border-color:#ccd4da}body.theme-light .subhead{background:linear-gradient(180deg,#fff,#eef2f4);border-color:#d5dce1}body.theme-light .subhead h3{color:#172028}
+body.theme-light .row{border-color:#dbe1e5}body.theme-light .cell{color:#53606a;border-color:#dbe1e5}body.theme-light .head{background:#e8edf1;color:#59656f}body.theme-light .code,body.theme-light .body{color:#18232b}body.theme-light .meta{color:#64717b}
+body.theme-light .side{background:#f8fafb;border-color:#cbd3da;box-shadow:0 12px 30px #0002}body.theme-light .sideItem{color:#4c5862}body.theme-light .sideItem:hover{background:#e9eef1;color:#172028}
+body.theme-light .modal{background:#f7f9fa;border-color:#cbd3da;color:#172028}body.theme-light .modalhead{border-color:#d5dce1}body.theme-light .field input,body.theme-light .field textarea,body.theme-light .field select{background:#fff;color:#172028;border-color:#bbc5cd}body.theme-light .themeCard{background:#fff;border-color:#cbd3da;color:#172028}body.theme-light .themeOptions select{background:#fff;color:#172028;border-color:#bbc5cd}
+body.theme-compact{font-size:11px}body.theme-compact .row{min-height:44px}body.theme-compact .cell{padding:7px 9px}body.theme-compact .subhead{min-height:42px}body.theme-compact .toolbar{padding-top:8px;padding-bottom:8px}
+body.theme-large{font-size:13px}body.theme-large .body,body.theme-large .simpleBody{font-size:11px}body.theme-large .cell{font-size:11px}body.theme-large .subhead h3{font-size:17px}
+@media(max-width:800px){.themeGrid,.themeOptions{grid-template-columns:1fr}.themeModal{width:100%}}
+</style>
 </head>
 <body>
 <header class="top">
@@ -87,6 +109,15 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <div id="staffError" class="error"></div>
 <div class="actions"><button type="button" class="cancel" onclick="closeModal('staffFormOverlay')">Отмена</button><button class="save">Создать</button></div>
 </form></div></div>
+<div class="overlay" id="themeOverlay"><div class="modal themeModal"><div class="modalhead"><h3>Настройка внешнего вида</h3><button class="x" onclick="closeModal('themeOverlay')">×</button></div><div class="form">
+<div style="color:#7f8992;font-size:9px;line-height:1.5;margin-bottom:14px">Настройки сохраняются в браузере. Они действуют только для этого пользователя и не требуют входа.</div>
+<div class="themeGrid" id="themeCards"></div>
+<div class="themeOptions">
+<div><label>Размер интерфейса</label><select id="themeScale" onchange="applyThemeSettings()"><option value="normal">Обычный</option><option value="compact">Компактный</option><option value="large">Крупный</option></select></div>
+<div><label>Цвет акцента</label><input id="themeAccent" type="color" value="#ff1724" onchange="applyThemeSettings()"></div>
+</div>
+<div class="actions" style="margin-top:15px"><button type="button" class="cancel" onclick="resetThemeSettings()">Сбросить</button><button type="button" class="save" onclick="closeModal('themeOverlay')">Готово</button></div>
+</div></div></div>
 <div class="toast" id="toast">Скопировано</div>
 
 <script type="module">
@@ -285,11 +316,44 @@ async function refreshRole(){
  }catch(e){console.warn('Session load error',e);user=null;role=null;editorMode=false}
  renderUser();render();
 }
+const THEME_PRESETS={
+ red:{name:'Weazel Red',desc:'Классическая тёмная тема Weazel News.',bg:'#030507',panel:'#080b0f',accent:'#ff1724'},
+ blue:{name:'Midnight Blue',desc:'Холодная тёмная тема с синим акцентом.',bg:'#04070b',panel:'#081019',accent:'#3b82f6'},
+ purple:{name:'Night Purple',desc:'Тёмная тема с фиолетовым акцентом.',bg:'#07040b',panel:'#0e0915',accent:'#a855f7'},
+ green:{name:'Emerald',desc:'Спокойная тёмная тема с зелёным акцентом.',bg:'#030806',panel:'#07110c',accent:'#22c55e'},
+ light:{name:'Light',desc:'Светлая тема для работы днём.',bg:'#eef2f5',panel:'#f7f9fa',accent:'#e11d2e'}
+};
+function getThemeSettings(){try{return JSON.parse(localStorage.getItem('weazel_theme')||'{}')}catch(e){return {}}}
+function applyThemeSettings(){
+ const s=getThemeSettings();
+ const preset=document.querySelector('.themeCard.active')?.dataset.theme||s.preset||'red';
+ const scale=document.getElementById('themeScale')?.value||s.scale||'normal';
+ const accent=document.getElementById('themeAccent')?.value||s.accent||THEME_PRESETS[preset].accent;
+ const p=THEME_PRESETS[preset];
+ localStorage.setItem('weazel_theme',JSON.stringify({preset,scale,accent}));
+ document.body.classList.remove('theme-light','theme-compact','theme-large');
+ if(preset==='light')document.body.classList.add('theme-light');
+ if(scale==='compact')document.body.classList.add('theme-compact');
+ if(scale==='large')document.body.classList.add('theme-large');
+ document.documentElement.style.setProperty('--red',accent);
+ document.documentElement.style.setProperty('--red2',accent);
+ document.documentElement.style.setProperty('--bg',p.bg);
+ document.documentElement.style.setProperty('--panel',p.panel);
+ document.querySelectorAll('.themeCard').forEach(x=>x.classList.toggle('active',x.dataset.theme===preset));
+}
+function renderThemeCards(){
+ const box=document.getElementById('themeCards');if(!box)return;
+ box.innerHTML=Object.entries(THEME_PRESETS).map(([key,p])=>'<button type="button" class="themeCard '+(key===(getThemeSettings().preset||'red')?'active':'')+'" data-theme="'+key+'" onclick="selectTheme(\''+key+'\')"><div class="themePreview" style="background:linear-gradient(90deg,'+p.panel+' 0 65%,'+p.accent+' 65%)"></div><strong>'+p.name+'</strong><small>'+p.desc+'</small></button>').join('');
+}
+window.selectTheme=key=>{const s=getThemeSettings();localStorage.setItem('weazel_theme',JSON.stringify({...s,preset:key}));const scale=document.getElementById('themeScale');const accent=document.getElementById('themeAccent');if(scale)scale.value=s.scale||'normal';if(accent)accent.value=s.accent||THEME_PRESETS[key].accent;renderThemeCards();applyThemeSettings()};
+window.openThemeSettings=()=>{renderThemeCards();const s=getThemeSettings();document.getElementById('themeScale').value=s.scale||'normal';document.getElementById('themeAccent').value=s.accent||THEME_PRESETS[s.preset||'red'].accent;openModal('themeOverlay')};
+window.resetThemeSettings=()=>{localStorage.removeItem('weazel_theme');document.documentElement.style.setProperty('--red','#ff1724');document.documentElement.style.setProperty('--red2','#ff3540');document.body.classList.remove('theme-light','theme-compact','theme-large');renderThemeCards();document.getElementById('themeScale').value='normal';document.getElementById('themeAccent').value='#ff1724';toast('Тема сброшена')};
+(function initTheme(){const s=getThemeSettings();const preset=s.preset||'red';document.documentElement.style.setProperty('--red',s.accent||THEME_PRESETS[preset].accent);document.documentElement.style.setProperty('--red2',s.accent||THEME_PRESETS[preset].accent);document.documentElement.style.setProperty('--bg',THEME_PRESETS[preset].bg);document.documentElement.style.setProperty('--panel',THEME_PRESETS[preset].panel);document.body.classList.toggle('theme-light',preset==='light');document.body.classList.toggle('theme-compact',s.scale==='compact');document.body.classList.toggle('theme-large',s.scale==='large')})();
 function renderUser(){
  const e=document.getElementById('user');
  if(user){
    const editorLabel=editorMode?'Редактор ✓':'Редактор';
-   e.innerHTML='<span class="role">'+esc(role||'сотрудник')+'</span>'+(canEdit()?'<button class="login" style="border-color:'+(editorMode?'#ff2632':'#333c46')+';background:'+(editorMode?'#18090c':'#080c10')+'" onclick="openEditorMenu()">'+editorLabel+'</button>':'')+'<button class="logout" onclick="logout()">Выйти</button>';
+   e.innerHTML='<button class="login" onclick="openThemeSettings()">⚙ Тема</button>'+'<span class="role">'+esc(role||'сотрудник')+'</span>'+(canEdit()?'<button class="login" style="border-color:'+(editorMode?'#ff2632':'#333c46')+';background:'+(editorMode?'#18090c':'#080c10')+'" onclick="openEditorMenu()">'+editorLabel+'</button>':'')+'<button class="logout" onclick="logout()">Выйти</button>';
  } else {
    e.innerHTML='<button class="login" onclick="openModal(\'loginOverlay\')">Вход для редакторов</button>';
  }
