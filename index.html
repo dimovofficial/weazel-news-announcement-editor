@@ -337,12 +337,19 @@ async function load(){
  const content=document.getElementById('content');
  const timeout=(ms)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error('Превышено время ожидания соединения с Supabase')),ms));
  try{
-   const tplRes=await Promise.race([
-     sb.rpc('editor_templates',{p_search:null,p_category:null}),
-     timeout(8000)
-   ]);
-   if(tplRes.error)throw new Error('Шаблоны: '+tplRes.error.message);
-   templates=Array.isArray(tplRes.data)?tplRes.data:(tplRes.data==null?[]:[...tplRes.data]);
+   const all=[];
+   const pageSize=350;
+   for(let offset=0;;offset+=pageSize){
+     const tplRes=await Promise.race([
+       sb.rpc('editor_templates_page',{p_search:null,p_category:null,p_limit:pageSize,p_offset:offset}),
+       timeout(8000)
+     ]);
+     if(tplRes.error)throw new Error('Шаблоны: '+tplRes.error.message);
+     const page=Array.isArray(tplRes.data)?tplRes.data:(tplRes.data==null?[]:[...tplRes.data]);
+     all.push(...page);
+     if(page.length<pageSize)break;
+   }
+   templates=all;
  }catch(error){
    console.error('Template load error',error);
    templates=[];
