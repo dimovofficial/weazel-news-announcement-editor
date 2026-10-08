@@ -172,8 +172,9 @@ body.customTheme{background:var(--user-bg,#030507)!important;color:var(--user-te
 </div></div></div>
 <div class="toast" id="toast">Скопировано</div>
 
-<script type="module">
-import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const {createClient}=window.supabase;
 const SUPABASE_URL='https://niejderxjbawkbqovqfx.supabase.co';
 const SUPABASE_KEY='sb_'+'publishabl'+'e_d_G3NWd7JH'+'dhYsKuteqbAw_KT0QBPJZ';
 const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
