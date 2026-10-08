@@ -52,6 +52,12 @@ body.customTheme .sectionhead{border-left-color:var(--user-accent,#ff1724)}
 body.customTheme .stat.red .statIcon,body.customTheme .hero .eyebrow:before,body.customTheme .wordmark strong span{color:var(--user-accent,#ff1724)}
 body.customTheme .copy button,body.customTheme .simpleActions button.editTemplateBtn{background:var(--user-accent,#ff1724);border-color:var(--user-accent,#ff1724)}
 @media(max-width:800px){.themeControls{grid-template-columns:1fr}.themeModal{width:100%}}
+
+/* Advanced personal appearance controls */
+.themeControlWide{grid-column:1/-1}.themeColorRow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.themeMiniColor{border:1px solid #29323a;border-radius:7px;background:#080d12;padding:8px}.themeMiniColor label{display:block;color:#8b949d;font-size:7px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}.themeMiniColor input{width:100%;height:34px;border:0;background:transparent;padding:0;cursor:pointer}.themeSliderRow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.themeHint{color:#68737d;font-size:8px;line-height:1.45;margin-top:6px}.themeCheckbox{display:flex;align-items:center;gap:9px;color:#c2c9cf;font-size:9px;padding-top:13px}.themeCheckbox input{accent-color:var(--red);width:15px;height:15px}.themePreviewLarge{height:110px;border-radius:8px;border:1px solid #303943;margin-top:12px;overflow:hidden;position:relative;background:#080d12}.themePreviewLarge .pvTop{height:25px;background:#0b1015;border-bottom:1px solid #252d34}.themePreviewLarge .pvBody{display:grid;grid-template-columns:1fr 140px;height:85px}.themePreviewLarge .pvMain{padding:12px}.themePreviewLarge .pvTitle{height:10px;width:45%;border-radius:5px;background:#ff1724;margin-bottom:10px}.themePreviewLarge .pvLine{height:7px;width:80%;border-radius:4px;background:#65717b;margin-bottom:7px;opacity:.5}.themePreviewLarge .pvCard{border:1px solid #29323a;border-radius:7px;background:#11171d;margin-top:3px;height:44px}.themePreviewLarge .pvSide{border-left:1px solid #29323a;background:#0a0f14;padding:10px}.themePreviewLarge .pvSide div{height:7px;margin-bottom:8px;border-radius:4px;background:#65717b;opacity:.45}
+@media(max-width:800px){.themeColorRow,.themeSliderRow{grid-template-columns:1fr}.themeControlWide{grid-column:auto}}
+
+body.customTheme .sectionhead h2{color:var(--user-heading,#f1f3f5)}body.customTheme .hero h1{color:var(--user-heading,#f4f6f8)}body.customTheme .hero h1 span{color:var(--user-accent,#ff1724)}body.customTheme .subsection,body.customTheme .simpleTemplate,body.customTheme .side{box-shadow:0 var(--user-shadow,10px) calc(var(--user-shadow,10px)*2) rgba(0,0,0,.35)}body.customTheme .top,body.customTheme .toolbar{backdrop-filter:blur(var(--user-blur,12px))}body.customTheme .layout{gap:var(--user-spacing,14px)}body.customTheme .subsection{margin-bottom:var(--user-spacing,14px)}body.customTheme .cell{padding-top:calc(var(--user-spacing,14px)*.7);padding-bottom:calc(var(--user-spacing,14px)*.7)}body.customTheme .heroStats{border-color:var(--user-border,#242a31)}
 </style>
 </head>
 <body>
@@ -121,26 +127,47 @@ body.customTheme .copy button,body.customTheme .simpleActions button.editTemplat
 <div class="actions"><button type="button" class="cancel" onclick="closeModal('staffFormOverlay')">Отмена</button><button class="save">Создать</button></div>
 </form></div></div>
 <div class="overlay" id="themeOverlay"><div class="modal themeModal"><div class="modalhead"><h3>Внешний вид сайта</h3><button class="x" onclick="closeModal('themeOverlay')">×</button></div><div class="form">
-<div class="themeIntro">Настрой сайт полностью под себя. Изменения сохраняются только в этом браузере и не влияют на других пользователей.</div>
-<div class="themeSection"><div class="themeSectionTitle">🎨 Основные цвета</div><div class="themeControls">
-<div class="themeControl"><label>Цвет акцента</label><input id="themeAccent" type="color" value="#ff1724" onchange="applyThemeSettings()"></div>
-<div class="themeControl"><label>Цвет текста</label><input id="themeText" type="color" value="#f4f6f8" onchange="applyThemeSettings()"></div>
-<div class="themeControl"><label>Цвет фона</label><input id="themeBg" type="color" value="#030507" onchange="applyThemeSettings()"></div>
-<div class="themeControl"><label>Цвет панелей</label><input id="themePanel" type="color" value="#080d12" onchange="applyThemeSettings()"></div>
+<div class="themeIntro">Настрой сайт полностью под себя. Все изменения сохраняются только в этом браузере и не влияют на других пользователей.</div>
+
+<div class="themeSection"><div class="themeSectionTitle">🎨 Цвета интерфейса</div>
+<div class="themeColorRow">
+<div class="themeMiniColor"><label>Акцент</label><input id="themeAccent" type="color" value="#ff1724" onchange="applyThemeSettings()"></div>
+<div class="themeMiniColor"><label>Основной текст</label><input id="themeText" type="color" value="#f4f6f8" onchange="applyThemeSettings()"></div>
+<div class="themeMiniColor"><label>Вторичный текст</label><input id="themeMuted" type="color" value="#aeb6be" onchange="applyThemeSettings()"></div>
+<div class="themeMiniColor"><label>Фон</label><input id="themeBg" type="color" value="#030507" onchange="applyThemeSettings()"></div>
+<div class="themeMiniColor"><label>Панели</label><input id="themePanel" type="color" value="#080d12" onchange="applyThemeSettings()"></div>
+<div class="themeMiniColor"><label>Заголовки</label><input id="themeHeading" type="color" value="#f1f3f5" onchange="applyThemeSettings()"></div>
 </div></div>
-<div class="themeSection"><div class="themeSectionTitle">🔤 Шрифт и размер</div><div class="themeControls">
+
+<div class="themeSection"><div class="themeSectionTitle">🔤 Типографика</div><div class="themeControls">
 <div class="themeControl"><label>Шрифт</label><select id="themeFont" onchange="applyThemeSettings()"><option value="Comfortaa">Comfortaa</option><option value="Inter">Inter</option><option value="Roboto">Roboto</option><option value="Montserrat">Montserrat</option><option value="Nunito">Nunito</option><option value="Open Sans">Open Sans</option><option value="Arial">Arial</option><option value="Georgia">Georgia</option></select></div>
-<div class="themeControl"><label>Размер текста <span class="themeRangeValue" id="themeSizeValue"></span></label><input id="themeSize" type="range" min="10" max="16" step="1" value="12" oninput="applyThemeSettings()"></div>
+<div class="themeControl"><label>Размер текста <span class="themeRangeValue" id="themeSizeValue"></span></label><input id="themeSize" type="range" min="10" max="17" step="1" value="12" oninput="applyThemeSettings()"></div>
 </div></div>
-<div class="themeSection"><div class="themeSectionTitle">🖼️ Фон сайта</div><div class="themeControls">
+
+<div class="themeSection"><div class="themeSectionTitle">🖼️ Фон</div><div class="themeControls">
 <div class="themeControl"><label>Тип фона</label><select id="themeBgMode" onchange="applyThemeSettings()"><option value="color">Однотонный</option><option value="gradient">Градиент</option><option value="image">Изображение</option></select></div>
-<div class="themeControl"><label>Прозрачность затемнения <span class="themeRangeValue" id="themeOverlayValue"></span></label><input id="themeOverlayOpacity" type="range" min="0" max="80" step="5" value="25" oninput="applyThemeSettings()"></div>
-<div class="themeControl" style="grid-column:1/-1"><label>Загрузить своё изображение</label><input id="themeBgFile" class="themeFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="handleThemeImage(event)"></div>
+<div class="themeControl"><label>Затемнение <span class="themeRangeValue" id="themeOverlayValue"></span></label><input id="themeOverlayOpacity" type="range" min="0" max="85" step="5" value="25" oninput="applyThemeSettings()"></div>
+<div class="themeControl themeControlWide"><label>Собственное изображение</label><input id="themeBgFile" class="themeFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="handleThemeImage(event)"><div class="themeHint">PNG, JPG или WEBP, до 1.8 МБ. Изображение остаётся только в браузере этого пользователя.</div></div>
 </div><div class="themeBgPreview" id="themeBgPreview"></div></div>
-<div class="themeSection"><div class="themeSectionTitle">📐 Размер интерфейса</div><div class="themeControls">
-<div class="themeControl"><label>Масштаб</label><select id="themeScale" onchange="applyThemeSettings()"><option value="compact">Компактный</option><option value="normal">Обычный</option><option value="large">Крупный</option></select></div>
-<div class="themeControl"><label>Скругление элементов</label><input id="themeRadius" type="range" min="0" max="18" step="1" value="7" oninput="applyThemeSettings()"></div>
+
+<div class="themeSection"><div class="themeSectionTitle">📐 Размеры и плотность</div>
+<div class="themeSliderRow">
+<div class="themeControl"><label>Масштаб интерфейса</label><select id="themeScale" onchange="applyThemeSettings()"><option value="compact">Компактный</option><option value="normal">Обычный</option><option value="large">Крупный</option></select></div>
+<div class="themeControl"><label>Ширина контента <span class="themeRangeValue" id="themeWidthValue"></span></label><input id="themeWidth" type="range" min="900" max="1800" step="50" value="1400" oninput="applyThemeSettings()"></div>
+<div class="themeControl"><label>Отступы <span class="themeRangeValue" id="themeSpacingValue"></span></label><input id="themeSpacing" type="range" min="4" max="28" step="2" value="14" oninput="applyThemeSettings()"></div>
+<div class="themeControl"><label>Скругление <span class="themeRangeValue" id="themeRadiusValue"></span></label><input id="themeRadius" type="range" min="0" max="20" step="1" value="7" oninput="applyThemeSettings()"></div>
 </div></div>
+
+<div class="themeSection"><div class="themeSectionTitle">✨ Эффекты</div><div class="themeControls">
+<div class="themeControl"><label>Прозрачность панелей <span class="themeRangeValue" id="themePanelOpacityValue"></span></label><input id="themePanelOpacity" type="range" min="55" max="100" step="5" value="100" oninput="applyThemeSettings()"></div>
+<div class="themeControl"><label>Сила теней <span class="themeRangeValue" id="themeShadowValue"></span></label><input id="themeShadow" type="range" min="0" max="100" step="10" value="55" oninput="applyThemeSettings()"></div>
+<div class="themeCheckbox"><input id="themeGlow" type="checkbox" checked onchange="applyThemeSettings()"><span>Свечение акцентного цвета</span></div>
+<div class="themeCheckbox"><input id="themeBlur" type="checkbox" checked onchange="applyThemeSettings()"><span>Размытие верхней панели</span></div>
+</div></div>
+
+<div class="themeSection"><div class="themeSectionTitle">👁 Предпросмотр</div>
+<div class="themePreviewLarge" id="themeLivePreview"><div class="pvTop"></div><div class="pvBody"><div class="pvMain"><div class="pvTitle"></div><div class="pvLine"></div><div class="pvLine"></div><div class="pvCard"></div></div><div class="pvSide"><div></div><div></div><div></div></div></div></div></div>
+
 <div class="themeActions"><button type="button" class="cancel" onclick="resetThemeSettings()">Сбросить всё</button><button type="button" class="save" onclick="closeModal('themeOverlay')">Готово</button></div>
 </div></div></div>
 <div class="toast" id="toast">Скопировано</div>
@@ -341,7 +368,7 @@ async function refreshRole(){
  }catch(e){console.warn('Session load error',e);user=null;role=null;editorMode=false}
  renderUser();render();
 }
-const DEFAULT_THEME={accent:'#ff1724',text:'#f4f6f8',bg:'#030507',panel:'#080d12',font:'Comfortaa',size:12,bgMode:'color',overlay:25,scale:'normal',radius:7,image:''};
+const DEFAULT_THEME={accent:'#ff1724',text:'#f4f6f8',muted:'#aeb6be',bg:'#030507',panel:'#080d12',heading:'#f1f3f5',font:'Comfortaa',size:12,bgMode:'color',overlay:25,scale:'normal',radius:7,width:1400,spacing:14,panelOpacity:100,shadow:55,glow:true,blur:true,image:''};
 function getThemeSettings(){try{return {...DEFAULT_THEME,...JSON.parse(localStorage.getItem('weazel_theme')||'{}')}}catch(e){return {...DEFAULT_THEME}}}
 function saveThemeSettings(s){localStorage.setItem('weazel_theme',JSON.stringify(s))}
 function loadGoogleFont(font){
@@ -352,47 +379,64 @@ function loadGoogleFont(font){
 }
 function hexToRgba(hex,a){const h=hex.replace('#','');const n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'}
 function applyThemeSettings(){
- const s=getThemeSettings();
- const get=id=>document.getElementById(id);
- if(get('themeAccent'))s.accent=get('themeAccent').value;
- if(get('themeText'))s.text=get('themeText').value;
- if(get('themeBg'))s.bg=get('themeBg').value;
- if(get('themePanel'))s.panel=get('themePanel').value;
- if(get('themeFont'))s.font=get('themeFont').value;
- if(get('themeSize'))s.size=Number(get('themeSize').value);
- if(get('themeBgMode'))s.bgMode=get('themeBgMode').value;
- if(get('themeOverlayOpacity'))s.overlay=Number(get('themeOverlayOpacity').value);
- if(get('themeScale'))s.scale=get('themeScale').value;
- if(get('themeRadius'))s.radius=Number(get('themeRadius').value);
+ const s=getThemeSettings(),g=id=>document.getElementById(id);
+ if(g('themeAccent'))s.accent=g('themeAccent').value;
+ if(g('themeText'))s.text=g('themeText').value;
+ if(g('themeMuted'))s.muted=g('themeMuted').value;
+ if(g('themeBg'))s.bg=g('themeBg').value;
+ if(g('themePanel'))s.panel=g('themePanel').value;
+ if(g('themeHeading'))s.heading=g('themeHeading').value;
+ if(g('themeFont'))s.font=g('themeFont').value;
+ if(g('themeSize'))s.size=Number(g('themeSize').value);
+ if(g('themeBgMode'))s.bgMode=g('themeBgMode').value;
+ if(g('themeOverlayOpacity'))s.overlay=Number(g('themeOverlayOpacity').value);
+ if(g('themeScale'))s.scale=g('themeScale').value;
+ if(g('themeWidth'))s.width=Number(g('themeWidth').value);
+ if(g('themeSpacing'))s.spacing=Number(g('themeSpacing').value);
+ if(g('themeRadius'))s.radius=Number(g('themeRadius').value);
+ if(g('themePanelOpacity'))s.panelOpacity=Number(g('themePanelOpacity').value);
+ if(g('themeShadow'))s.shadow=Number(g('themeShadow').value);
+ if(g('themeGlow'))s.glow=g('themeGlow').checked;
+ if(g('themeBlur'))s.blur=g('themeBlur').checked;
  saveThemeSettings(s);
  const root=document.documentElement;
- const bgImage=s.image?'url("'+s.image+'")':'none';
  let bg=s.bg;
  if(s.bgMode==='gradient')bg='linear-gradient(135deg,'+s.bg+' 0%, '+hexToRgba(s.accent,.22)+' 55%, #020304 100%)';
- if(s.bgMode==='image'&&s.image)bg=bgImage+' center/cover fixed no-repeat';
+ if(s.bgMode==='image'&&s.image)bg='url("'+s.image+'") center/cover fixed no-repeat';
+ const alpha=s.panelOpacity/100;
  root.style.setProperty('--user-bg',bg);
  root.style.setProperty('--user-text',s.text);
- root.style.setProperty('--user-muted',hexToRgba(s.text,.62));
- root.style.setProperty('--user-panel',s.panel);
- root.style.setProperty('--user-panel2',hexToRgba(s.panel,1));
- root.style.setProperty('--user-panel-deep',hexToRgba(s.bg,.78));
- root.style.setProperty('--user-border',hexToRgba(s.text,.14));
+ root.style.setProperty('--user-muted',s.muted);
+ root.style.setProperty('--user-heading',s.heading);
+ root.style.setProperty('--user-panel',hexToRgba(s.panel,alpha));
+ root.style.setProperty('--user-panel-solid',s.panel);
+ root.style.setProperty('--user-panel2',hexToRgba(s.panel,Math.min(1,alpha+.03)));
+ root.style.setProperty('--user-panel-deep',hexToRgba(s.bg,Math.max(.55,alpha)));
+ root.style.setProperty('--user-border',hexToRgba(s.muted,.16));
  root.style.setProperty('--user-accent',s.accent);
- root.style.setProperty('--user-accent-soft',hexToRgba(s.accent,.28));
- root.style.setProperty('--user-top',hexToRgba(s.panel,.94));
- root.style.setProperty('--user-hero',s.bgMode==='gradient'?bg:s.panel);
+ root.style.setProperty('--user-accent-soft',hexToRgba(s.accent,s.glow?.32:.08));
+ root.style.setProperty('--user-top',hexToRgba(s.panel,Math.min(1,alpha+.02)));
+ root.style.setProperty('--user-hero',s.bgMode==='gradient'?bg:hexToRgba(s.panel,alpha));
  root.style.setProperty('--user-overlay','linear-gradient(90deg,transparent 0,rgba(0,0,0,'+(s.overlay/100)+') 100%)');
  root.style.setProperty('--user-font','"'+s.font+'"');
  root.style.setProperty('--user-size',s.size+'px');
  root.style.setProperty('--user-radius',s.radius+'px');
+ root.style.setProperty('--user-width',s.width+'px');
+ root.style.setProperty('--user-spacing',s.spacing+'px');
+ const shadow=Math.round(s.shadow/100*18);
+ root.style.setProperty('--user-shadow',shadow+'px');
  document.body.classList.remove('theme-compact','theme-large');
  if(s.scale==='compact')document.body.classList.add('theme-compact');
  if(s.scale==='large')document.body.classList.add('theme-large');
  document.body.classList.add('customTheme');
  root.style.setProperty('--red',s.accent);root.style.setProperty('--red2',s.accent);
+ document.body.style.fontFamily='"'+s.font+'",Arial,sans-serif';
  document.querySelectorAll('.subsection,.simpleTemplate,.search,.searchResults,.side,.modal,.themeSection').forEach(x=>x.style.borderRadius=s.radius+'px');
- const sv=get('themeSizeValue'),ov=get('themeOverlayValue');if(sv)sv.textContent=s.size+' px';if(ov)ov.textContent=s.overlay+'%';
- const preview=get('themeBgPreview');if(preview){preview.style.background=s.bgMode==='image'&&s.image?'url("'+s.image+'") center/cover no-repeat':s.bgMode==='gradient'?bg:s.bg;preview.style.setProperty('--custom-bg-preview',preview.style.background)}
+ const layout=document.querySelector('.layout');if(layout){layout.style.maxWidth=s.width+'px';layout.style.marginLeft='auto';layout.style.marginRight='auto';layout.style.paddingLeft=s.spacing+'px';layout.style.paddingRight=s.spacing+'px'}
+ const sv=g('themeSizeValue'),ov=g('themeOverlayValue'),wv=g('themeWidthValue'),spv=g('themeSpacingValue'),rv=g('themeRadiusValue'),pv=g('themePanelOpacityValue'),shv=g('themeShadowValue');
+ if(sv)sv.textContent=s.size+' px';if(ov)ov.textContent=s.overlay+'%';if(wv)wv.textContent=s.width+' px';if(spv)spv.textContent=s.spacing+' px';if(rv)rv.textContent=s.radius+' px';if(pv)pv.textContent=s.panelOpacity+'%';if(shv)shv.textContent=s.shadow+'%';
+ const preview=g('themeBgPreview');if(preview){preview.style.background=s.bgMode==='image'&&s.image?'url("'+s.image+'") center/cover no-repeat':s.bgMode==='gradient'?bg:s.bg}
+ const lp=g('themeLivePreview');if(lp){lp.style.background=s.panel;lp.style.borderColor=s.muted;lp.querySelector('.pvTop').style.background=s.panel;lp.querySelector('.pvTitle').style.background=s.accent;lp.querySelector('.pvSide').style.background=s.bg;lp.querySelector('.pvCard').style.background=s.panel;lp.querySelector('.pvCard').style.borderColor=s.muted;lp.querySelectorAll('.pvLine,.pvSide div').forEach(x=>x.style.background=s.muted)}
  loadGoogleFont(s.font);
 }
 window.handleThemeImage=ev=>{
@@ -400,9 +444,8 @@ window.handleThemeImage=ev=>{
  if(file.size>1800000){toast('Изображение слишком большое, максимум 1.8 МБ');ev.target.value='';return}
  const reader=new FileReader();reader.onload=()=>{const s=getThemeSettings();s.image=reader.result;s.bgMode='image';saveThemeSettings(s);document.getElementById('themeBgMode').value='image';applyThemeSettings()};reader.readAsDataURL(file);
 };
-window.openThemeSettings=()=>{const s=getThemeSettings();const g=id=>document.getElementById(id);g('themeAccent').value=s.accent;g('themeText').value=s.text;g('themeBg').value=s.bg;g('themeFont').value=s.font;g('themeSize').value=s.size;g('themeBgMode').value=s.bgMode;g('themeOverlayOpacity').value=s.overlay;g('themeScale').value=s.scale;g('themeRadius').value=s.radius;renderThemePreview();openModal('themeOverlay')};
-function renderThemePreview(){applyThemeSettings()}
-window.resetThemeSettings=()=>{localStorage.removeItem('weazel_theme');const g=id=>document.getElementById(id);if(g('themeBgFile'))g('themeBgFile').value='';const s={...DEFAULT_THEME};saveThemeSettings(s);g('themeAccent').value=s.accent;g('themeText').value=s.text;g('themeBg').value=s.bg;g('themeFont').value=s.font;g('themeSize').value=s.size;g('themeBgMode').value=s.bgMode;g('themeOverlayOpacity').value=s.overlay;g('themeScale').value=s.scale;g('themeRadius').value=s.radius;applyThemeSettings();toast('Настройки внешнего вида сброшены')};
+window.openThemeSettings=()=>{const s=getThemeSettings(),g=id=>document.getElementById(id);g('themeAccent').value=s.accent;g('themeText').value=s.text;g('themeMuted').value=s.muted;g('themeBg').value=s.bg;g('themePanel').value=s.panel;g('themeHeading').value=s.heading;g('themeFont').value=s.font;g('themeSize').value=s.size;g('themeBgMode').value=s.bgMode;g('themeOverlayOpacity').value=s.overlay;g('themeScale').value=s.scale;g('themeWidth').value=s.width;g('themeSpacing').value=s.spacing;g('themeRadius').value=s.radius;g('themePanelOpacity').value=s.panelOpacity;g('themeShadow').value=s.shadow;g('themeGlow').checked=s.glow;g('themeBlur').checked=s.blur;applyThemeSettings();openModal('themeOverlay')};
+window.resetThemeSettings=()=>{localStorage.removeItem('weazel_theme');const s={...DEFAULT_THEME};saveThemeSettings(s);const g=id=>document.getElementById(id);Object.entries({themeAccent:s.accent,themeText:s.text,themeMuted:s.muted,themeBg:s.bg,themePanel:s.panel,themeHeading:s.heading,themeFont:s.font,themeSize:s.size,themeBgMode:s.bgMode,themeOverlayOpacity:s.overlay,themeScale:s.scale,themeWidth:s.width,themeSpacing:s.spacing,themeRadius:s.radius,themePanelOpacity:s.panelOpacity,themeShadow:s.shadow}).forEach(([id,v])=>{if(g(id))g(id).value=v});if(g('themeBgFile'))g('themeBgFile').value='';if(g('themeGlow'))g('themeGlow').checked=s.glow;if(g('themeBlur'))g('themeBlur').checked=s.blur;applyThemeSettings();toast('Настройки внешнего вида сброшены')};
 (function initTheme(){applyThemeSettings()})();
 function renderUser(){
  const e=document.getElementById('user');
