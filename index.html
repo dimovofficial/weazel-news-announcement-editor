@@ -838,7 +838,7 @@ window.openWikiSync=()=>{if(!canEditUI()||!canManageStaff())return;document.getE
 window.openWikiCatalog=(kind)=>{const u=window.wikiCatalogUrls[kind];if(!u)return;window.wikiImportWindow=window.open(u,'_blank');if(!window.wikiImportWindow)toast('Браузер заблокировал новое окно. Разреши всплывающие окна для сайта.')};
 window.setupWikiBookmarklet=()=>{
  const a=document.getElementById('wikiBookmarklet');if(!a)return;
- const src="(async()=>{try{
+ const src=`(async()=>{try{
  const kind=location.pathname.toLowerCase().includes('/bags')?'bags':location.pathname.toLowerCase().includes('/vehicles')?'vehicles':'clothes';
  const official=['Верх','Низ','Аксессуары','Обувь','Перчатки','Майки','Головные уборы','Очки','Серёжки','Часы','Браслеты'];
  const esc=s=>String(s||'').replace(/\\s+/g,' ').trim(),sleep=ms=>new Promise(r=>setTimeout(r,ms)),visible=e=>!!e&&e.offsetParent!==null,text=e=>esc(e&&e.textContent);
@@ -859,7 +859,7 @@ window.setupWikiBookmarklet=()=>{
  const result=[...items.values()];
  if(window.opener){window.opener.postMessage({type:'WEAZEL_WIKI_IMPORT',items:result,source:kind,pages:'all-categories'},'*');show('✅ Готово! Собрано '+result.length+' позиций.<br>Вернись в Weazel News.');setTimeout(()=>{try{window.close()}catch(_){}} ,1500)}
  else{const blob=new Blob([JSON.stringify({source:kind,items:result},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='weazel-wiki-'+kind+'.json';a.textContent='⬇ Скачать JSON';a.style='display:inline-block;margin-top:10px;color:#fff';document.getElementById('__weazelWikiBox').appendChild(a)}
- }catch(e){alert('Weazel Wiki Importer: '+(e&&e.message||e))}})();";
+ }catch(e){alert('Weazel Wiki Importer: '+(e&&e.message||e))}})();`
  a.href='javascript:'+src
 };
 window.addEventListener('message',e=>{if(!e.data||e.data.type!=='WEAZEL_WIKI_IMPORT'||!Array.isArray(e.data.items))return;if(window.wikiImportWindow&&e.source!==window.wikiImportWindow)return;const incoming=e.data.items;const map=new Map(window.wikiItems.map(x=>[x.category+'\0'+String(x.name||'').trim().toLowerCase(),x]));incoming.forEach(x=>map.set(x.category+'\0'+String(x.name||'').trim().toLowerCase(),x));window.wikiItems=[...map.values()];const counts={};window.wikiItems.forEach(x=>{const k=x.category+'/'+x.group_name;counts[k]=(counts[k]||0)+1});document.getElementById('wikiSyncSummary').innerHTML='<strong>Получено: '+window.wikiItems.length+'</strong><br>'+Object.entries(counts).map(([k,n])=>esc(k)+': '+n).join('<br>');document.getElementById('wikiSyncPreview').innerHTML='<br><strong>Последний сбор:</strong> '+esc(e.data.source)+' · страниц: '+esc(e.data.pages)+' · записей: '+incoming.length+'<br><br>'+incoming.slice(0,16).map(x=>esc(x.name)+' → '+esc(x.category)+' / '+esc(x.group_name)).join('<br>')+(incoming.length>16?'<br>…':'');document.getElementById('wikiImportBtn').style.display=window.wikiItems.length?'':'none';toast('Wiki: получено '+incoming.length+' записей')});
