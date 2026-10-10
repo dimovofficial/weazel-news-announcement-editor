@@ -667,12 +667,24 @@ function catalogSectionHTML(cat,rows){
  for(const r of rows){const g=r.sheet_name||'Разное';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(r)}
  let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><h2>'+esc(cat.name)+'</h2></div><div class="sectionline"></div></div><div class="hint" style="margin:12px 0">Источник: импортированная таблица Excel · '+rows.length+' записей</div>';
  for(const [group,items] of groups){
-  html+='<div class="subsection"><div class="subhead"><span style="font-size:19px;color:#fff">●</span><h3>'+esc(group)+'</h3><span>'+items.length+' поз.</span></div><div class="tableWrap"><table class="templateTable"><thead><tr><th>Наименование</th><th>Лист</th><th>Строка</th></tr></thead><tbody>';
-  html+=items.map(x=>'<tr><td>'+esc(x.item_name)+'</td><td>'+esc(x.sheet_name)+'</td><td>'+x.source_row+'</td></tr>').join('');
-  html+='</tbody></table></div></div>';
+  html+='<div class="subsection"><div class="subhead"><span style="font-size:19px;color:#fff">●</span><h3>'+esc(group)+'</h3><span>'+items.length+' поз.</span></div><div class="simpleTemplates">';
+  html+=items.map(x=>'<div class="simpleTemplate itemTemplate"><div class="itemTemplateContent"><button type="button" class="itemName" title="Нажмите, чтобы скопировать название" onclick="copyCatalogItem('+x.id+')">'+esc(displayCatalogItemTitle(x.item_name))+'</button><div class="itemVariantControls"><select class="itemVariantSelect" aria-label="Вариант объявления" onchange="changeCatalogVariant('+x.id+',this.value)"><option value="buy">Куплю</option><option value="sell">Продам</option><option value="exchange">Обменяю</option></select></div><div class="simpleActions"><button type="button" class="copyItemBtn" onclick="copyCatalogAd('+x.id+')">Копировать объявление</button></div></div></div>').join('');
+  html+='</div></div>';
  }
  return html+'</section>';
 }
+function displayCatalogItemTitle(value){return String(value||'').trim()}
+function catalogDeclension(name,variant){
+ const n=String(name||'').trim(),lower=n.toLocaleLowerCase('ru');
+ const map={'маска':['маску','маски','маску'],'рюкзак':['рюкзак','рюкзак','рюкзак'],'сумка':['сумку','сумки','сумку'],'одежда':['одежду','одежды','одежду'],'автомобиль':['автомобиль','автомобиль','автомобиль'],'машина':['машину','машины','машину'],'удочка':['удочку','удочки','удочку'],'катушка':['катушку','катушки','катушку'],'леска':['леску','лески','леску'],'наживка':['наживку','наживки','наживку']};
+ const hit=Object.keys(map).find(k=>lower===k||lower.startsWith(k+' '));
+ if(!hit)return n;
+ const suffix=n.slice(hit.length);
+ return map[hit][variant==='sell'?1:variant==='exchange'?2:0]+suffix;
+}
+window.copyCatalogItem=async id=>{const x=catalogRows.find(r=>Number(r.id)===Number(id));if(!x)return;try{await navigator.clipboard.writeText(displayCatalogItemTitle(x.item_name));toast('Название скопировано')}catch(e){toast('Не удалось скопировать')}};
+window.changeCatalogVariant=(id,v)=>{const x=catalogRows.find(r=>Number(r.id)===Number(id));if(x)x._variant=v};
+window.copyCatalogAd=async id=>{const x=catalogRows.find(r=>Number(r.id)===Number(id));if(!x)return;const v=x._variant||'buy',word=v==='sell'?'Продам':v==='exchange'?'Обменяю':'Куплю',name=catalogDeclension(x.item_name,v);try{await navigator.clipboard.writeText(word+' '+name);toast('Объявление скопировано')}catch(e){toast('Не удалось скопировать')}};
 function categorySubcategories(slug){return subcategories.filter(s=>s.category===slug).sort((a,b)=>(a.sort_order-b.sort_order)||(a.id-b.id));}function sectionHTML(cat,items){
  if(cat.slug==='codes')return codesSectionHTML(cat,items);
  const groups=categorySubcategories(cat.slug);
@@ -926,8 +938,11 @@ document.getElementById('search').addEventListener('input',async()=>{
  document.getElementById('content').innerHTML='<div class="empty">Поиск по базе шаблонов...</div>';
  try{
    const rows=await fetchTemplatePages(q,null);
+   const catalogSearch=await sb.from('editor_item_catalog').select('id,sheet_name,category,item_name,source_row,source_column').ilike('item_name','%'+q.replace(/[%_]/g,'')+'%').order('item_name',{ascending:true}).limit(100);
+   if(catalogSearch.error)throw new Error('Поиск по справочнику: '+catalogSearch.error.message);
    if(requestId!==searchRequestId)return;
-   searchResults=rows;
+   const catalogMatches=(catalogSearch.data||[]).map(x=>({id:'catalog-'+x.id,catalog_id:x.id,title:x.item_name,body:x.item_name,category:({ 'Сумки и рюкзаки':'bags','Транспорт':'transport','Одежда':'clothing','Маски':'masks','Рыбалка / Охота':'fishing','Разное':'misc','Secret Shop':'misc'})[x.category]||'misc',group_name:x.sheet_name,_catalog:true}));
+   searchResults=[...rows,...catalogMatches];
    document.getElementById('searchResults')?.classList.remove('open');
    render();
  }catch(error){
