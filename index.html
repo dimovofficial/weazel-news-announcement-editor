@@ -869,6 +869,14 @@ document.getElementById('search').addEventListener('input',async()=>{
    toast('Ошибка поиска: '+(error.message||error));
  }
 });
+document.addEventListener('click',e=>{
+ const wrap=document.querySelector('.searchWrap');
+ if(wrap&&!wrap.contains(e.target))document.getElementById('searchResults')?.classList.remove('open');
+});
+document.getElementById('search').addEventListener('keydown',e=>{
+ if(e.key==='Escape'){document.getElementById('searchResults').classList.remove('open');document.getElementById('search').blur()}
+ if(e.key==='ArrowDown'){const first=document.querySelector('#searchResults .searchResult');if(first){e.preventDefault();first.focus()}}
+});
 document.getElementById('loginButton')?.addEventListener('click',()=>openModal('loginOverlay'));
 document.getElementById('fBody').addEventListener('input',updateLimit);
 render();
