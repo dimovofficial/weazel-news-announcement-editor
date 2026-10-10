@@ -269,11 +269,26 @@ window.jumpSubsection=(id)=>{
  const el=document.getElementById('sub-'+activeCategory+'-'+id)||document.getElementById('group-'+id);
  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
 };
+async function copyToClipboard(text,successMessage){
+ let copied=false;
+ try{
+  if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);copied=true}
+ }catch(e){}
+ if(!copied){
+  const ta=document.createElement('textarea');
+  ta.value=text;ta.setAttribute('readonly','');
+  ta.style.position='fixed';ta.style.left='0';ta.style.top='0';ta.style.width='2px';ta.style.height='2px';ta.style.padding='0';ta.style.opacity='0.01';ta.style.zIndex='99999';
+  document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);
+  try{copied=document.execCommand('copy')}catch(e){}
+  ta.remove();
+ }
+ if(copied)toast(successMessage);else toast('Не удалось скопировать. Проверь разрешение браузера на буфер обмена.');
+ return copied;
+}
 window.copyItemName=async(id)=>{
  const t=templates.find(x=>String(x.id)===String(id));if(!t)return;
  const text=String(t.title||'');if(!text)return;
- try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}
- toast('Название скопировано');
+ await copyToClipboard(text,'Название скопировано');
 };
 const ITEM_VARIANTS=[
  {value:'buy',text:t=>'Куплю '+t+'. Бюджет: свободный.'},
@@ -305,9 +320,7 @@ window.copyBody=async(id)=>{
  if(!t||isExpired(t))return;
  const card=document.getElementById('row-'+id),select=card?.querySelector('.itemVariantSelect'),other=card?.querySelector('.itemExchangeName');
  const text=isItemTemplate(t)?itemVariantText(t,select?.value||'buy',other?.value||''):String(t.body||'');
- try{await navigator.clipboard.writeText(text)}
- catch(e){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');ta.remove()}
- toast('Текст шаблона скопирован');
+ await copyToClipboard(text,'Текст шаблона скопирован');
 };
 function renderSearchResults(matches){
  const el=document.getElementById('searchResults');if(!el)return;
@@ -869,6 +882,13 @@ document.getElementById('search').addEventListener('input',async()=>{
    searchResults=[];
    render();
    toast('Ошибка поиска: '+(error.message||error));
+ }
+});
+document.addEventListener('click',e=>{
+ const card=e.target.closest('.itemTemplate');
+ if(card&&!e.target.closest('button,select,input,.simpleActions')){
+  const id=card.id.replace('row-','');
+  if(id)window.copyBody(id);
  }
 });
 document.addEventListener('click',e=>{
