@@ -311,7 +311,7 @@ window.copyBody=async(id)=>{
 };
 function renderSearchResults(matches){
  const el=document.getElementById('searchResults');if(!el)return;
- if(!matches.length){el.classList.remove('open');el.innerHTML='';return}
+ el.classList.remove('open');el.innerHTML='';return;
  const visible=matches.slice(0,6);
  el.innerHTML=visible.map(t=>{
    const cat=CATEGORIES.find(c=>c.slug===t.category),path=(cat?.name||t.category)+(t.group_name?' / '+t.group_name:'');
@@ -860,7 +860,8 @@ document.getElementById('search').addEventListener('input',async()=>{
  try{
    const rows=await fetchTemplatePages(q,null);
    if(requestId!==searchRequestId)return;
-   searchResults=rows;
+   searchResults=[];
+   document.getElementById('searchResults')?.classList.remove('open');
    render();
  }catch(error){
    if(requestId!==searchRequestId)return;
