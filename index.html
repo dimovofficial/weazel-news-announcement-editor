@@ -276,9 +276,9 @@ window.copyItemName=async(id)=>{
  toast('Название скопировано');
 };
 const ITEM_VARIANTS=[
- {value:'buy',text:t=>'Куплю "'+t+'". Бюджет: свободный.'},
- {value:'sell',text:t=>'Продам "'+t+'". Цена: договорная.'},
- {value:'exchange',text:(t,other)=>'Обменяю "'+t+'" на "'+(other||'Название вещи')+'". Без доплаты.'}
+ {value:'buy',text:t=>'Куплю '+t+'. Бюджет: свободный.'},
+ {value:'sell',text:t=>'Продам '+t+'. Цена: договорная.'},
+ {value:'exchange',text:(t,other)=>'Обменяю '+t+' на '+(other||'Название вещи')+'. Без доплаты.'}
 ];
 function isItemTemplate(t){return !!t&&t.category!=='codes'}
 function itemVariantText(t,variant,other){
