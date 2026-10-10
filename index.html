@@ -285,12 +285,19 @@ function itemVariantText(t,variant,other){
  const v=ITEM_VARIANTS.find(x=>x.value===variant)||ITEM_VARIANTS[0];
  return v.text(String(t.title||'Название вещи'),String(other||'').trim());
 }
+function getItemPreference(id){
+ try{return JSON.parse(localStorage.getItem('weazel_item_variant_'+id)||'{}')}catch(e){return {}}
+}
+function saveItemPreference(id,variant,other){
+ try{localStorage.setItem('weazel_item_variant_'+id,JSON.stringify({variant,other:other||''}))}catch(e){}
+}
 window.changeItemVariant=id=>{
  const t=templates.find(x=>String(x.id)===String(id));if(!t)return;
  const card=document.getElementById('row-'+id);if(!card)return;
  const select=card.querySelector('.itemVariantSelect'),other=card.querySelector('.itemExchangeName'),body=card.querySelector('.simpleBody');
  if(!select||!body)return;
  if(other)other.style.display=select.value==='exchange'?'':'none';
+ saveItemPreference(id,select.value,other?.value||'');
  body.textContent=itemVariantText(t,select.value,other?.value||'');
 };
 window.copyBody=async(id)=>{
@@ -631,7 +638,7 @@ function templateTable(list,cat){
    return html+'</div>';
  }
  if(!list.length)return '<div class="table"><div class="empty">Пока нет шаблонов</div></div>';
- return '<div class="simpleTemplates">'+list.map(t=>'<div class="simpleTemplate itemTemplate" id="row-'+t.id+'"><div class="itemTemplateContent"><button type="button" class="itemName" title="Нажмите, чтобы скопировать название" onclick="copyItemName('+t.id+')">'+esc(t.title||t.body||'Без названия')+'</button><div class="itemVariantControls"><select class="itemVariantSelect" aria-label="Вариант объявления" onchange="changeItemVariant('+t.id+')"><option value="buy">Куплю</option><option value="sell">Продам</option><option value="exchange">Обменяю</option></select><input class="itemExchangeName" aria-label="Название вещи для обмена" placeholder="Название вещи для обмена" style="display:none" oninput="changeItemVariant('+t.id+')"></div><div class="simpleBody" title="Нажмите, чтобы скопировать шаблон" onclick="copyBody('+t.id+')">'+esc(itemVariantText(t,'buy',''))+'</div></div>'+(canEditUI()?'<div class="simpleActions"><button class="editTemplateBtn" onclick="openEdit('+t.id+')">✎ Изменить</button></div>':'')+'</div>').join('')+'</div>';
+ return '<div class="simpleTemplates">'+list.map(t=>{const pref=getItemPreference(t.id),variant=ITEM_VARIANTS.some(x=>x.value===pref.variant)?pref.variant:'buy',other=String(pref.other||'');return '<div class="simpleTemplate itemTemplate" id="row-'+t.id+'"><div class="itemTemplateContent"><button type="button" class="itemName" title="Нажмите, чтобы скопировать название" onclick="copyItemName('+t.id+')">'+esc(t.title||t.body||'Без названия')+'</button><div class="itemVariantControls"><select class="itemVariantSelect" aria-label="Вариант объявления" onchange="changeItemVariant('+t.id+')"><option value="buy" '+(variant==='buy'?'selected':'')+'>Куплю</option><option value="sell" '+(variant==='sell'?'selected':'')+'>Продам</option><option value="exchange" '+(variant==='exchange'?'selected':'')+'>Обменяю</option></select><input class="itemExchangeName" aria-label="Название вещи для обмена" placeholder="Название вещи для обмена" value="'+esc(other)+'" style="display:'+(variant==='exchange'?'':'none')+'" oninput="changeItemVariant('+t.id+')"></div><div class="simpleBody" title="Нажмите, чтобы скопировать шаблон" onclick="copyBody('+t.id+')">'+esc(itemVariantText(t,variant,other))+'</div></div>'+(canEditUI()?'<div class="simpleActions"><button class="editTemplateBtn" onclick="openEdit('+t.id+')">✎ Изменить</button></div>':'')+'</div>'}).join('')+'</div>';
 }
 
 window.openNew=(cat,group='Разное')=>{
