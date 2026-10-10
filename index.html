@@ -941,7 +941,7 @@ document.getElementById('search').addEventListener('input',async()=>{
    const catalogSearch=await sb.from('editor_item_catalog').select('id,sheet_name,category,item_name,source_row,source_column').ilike('item_name','%'+q.replace(/[%_]/g,'')+'%').order('item_name',{ascending:true}).limit(100);
    if(catalogSearch.error)throw new Error('Поиск по справочнику: '+catalogSearch.error.message);
    if(requestId!==searchRequestId)return;
-   const catalogMatches=(catalogSearch.data||[]).map(x=>({id:'catalog-'+x.id,catalog_id:x.id,title:x.item_name,body:x.item_name,category:({ 'Сумки и рюкзаки':'bags','Транспорт':'transport','Одежда':'clothing','Маски':'masks','Рыбалка / Охота':'fishing','Разное':'misc','Secret Shop':'misc'})[x.category]||'misc',group_name:x.sheet_name,_catalog:true}));
+   catalogRows=[...new Map([...catalogRows,...(catalogSearch.data||[])].map(x=>[Number(x.id),x])).values()];\n   const catalogMatches=(catalogSearch.data||[]).map(x=>({id:'catalog-'+x.id,catalog_id:x.id,title:x.item_name,body:x.item_name,category:({ 'Сумки и рюкзаки':'bags','Транспорт':'transport','Одежда':'clothing','Маски':'masks','Рыбалка / Охота':'fishing','Разное':'misc','Secret Shop':'misc'})[x.category]||'misc',group_name:x.sheet_name,_catalog:true}));
    searchResults=[...rows,...catalogMatches];
    document.getElementById('searchResults')?.classList.remove('open');
    render();
