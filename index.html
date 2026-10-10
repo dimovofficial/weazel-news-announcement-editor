@@ -196,7 +196,7 @@ const ONE=new Set('♿ ⛔ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ⛎ �
 const TWO=new Set('⚠️ ☢️ ☣️ ⬆️ ↗️ ➡️ ↘️ ↙️ ⬅️ ↖️ ↩️ ↪️ ⤴️ ⤵️ ⚛️ ✡️ ☸️ ☯️ ✝️ ☦️ ☪️ ☮️ ▶️ ⏭️ ⏯️ ◀️ ⏹️ ⏺️ ⏏️ ✖️ ♾️ ❗️ 〰️ ⚕️ ♻️ ⚜️ ☑️ ✔️ 〽️ ✳️ ✴️ Ⓜ️ ㊗️ ㊙️ ◼️ ◻️ ☎️ ✉️ ✏️ ✒️ ✂️ ⛏️ ⚒️ ⚔️ ⚙️ ⚖️ ⛓️ ⚗️ ⚰️ ⚱️ ⛰️ ⛩️ ♨️ ⛴️ ✈️ ⏱️ ⏲️ ☀️ ☁️ ⛈️ ☂️ ⛱️ ❄️ ☃️ ☄️ ⛸️ ♟️ ⛷️ ⛹️ ☘️ ✌️ ☝️ ✍️ ☹️ ☠️ ❤️ ❣️'.split(' '));
 const THREE=new Set('⛑️ 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ #️⃣ *️⃣'.split(' '));
 let templates=[], subcategories=[], role=null, user=null, editingId=null, editorMode=false;
-let templateCache=new Map(), codesTemplates=[], searchResults=[], searchRequestId=0, loadingCategory=null;
+let templateCache=new Map(), codesTemplates=[], searchResults=[], searchRequestId=0, loadingCategory=null, catalogRows=[];
 const CODE_GROUPS=['Мафии','Банды','Клубы','Семьи','Бизнес','Разное'];
 
 function weightedLength(text){
@@ -440,9 +440,17 @@ async function loadCategory(slug,force=false){
  loadingCategory=slug;
  document.getElementById('content').innerHTML='<div class="empty">Загрузка раздела «'+esc(CATEGORIES.find(c=>c.slug===slug)?.name||slug)+'»...</div>';
  try{
-   const rows=await fetchTemplatePages(null,slug);
-   templateCache.set(slug,rows);
-   templates=rows;
+   const catalogCategory=({bags:'Сумки и рюкзаки',transport:'Транспорт',misc:'Разное',clothing:'Одежда',masks:'Маски',fishing:'Рыбалка / Охота'})[slug];
+   if(catalogCategory){
+     const cr=await sb.from('editor_item_catalog').select('id,sheet_name,category,item_name,source_row,source_column').eq('category',catalogCategory).order('item_name',{ascending:true}).limit(2500);
+     if(cr.error)throw new Error('Справочник предметов: '+cr.error.message);
+     catalogRows=cr.data||[];
+     templates=[];
+   }else{
+     const rows=await fetchTemplatePages(null,slug);
+     templateCache.set(slug,rows);
+     templates=rows;
+   }
    if(slug==='codes')codesTemplates=rows;
    loadingCategory=null;
    render();
@@ -650,9 +658,20 @@ function render(){
    renderSearchResults([]);
    let items=(map.get(activeCategory)||[]);
    if(letter){const wanted=letter.toLocaleUpperCase();items=items.filter(t=>(t.codeword||t.title||'').trim().toLocaleUpperCase().startsWith(wanted));}
-   document.getElementById('content').innerHTML=sectionHTML(CATEGORIES.find(x=>x.slug===activeCategory),items);
+   document.getElementById('content').innerHTML=(['bags','transport','misc','clothing','masks','fishing'].includes(activeCategory)&&catalogRows.length)?catalogSectionHTML(CATEGORIES.find(x=>x.slug===activeCategory),catalogRows):sectionHTML(CATEGORIES.find(x=>x.slug===activeCategory),items);
  }
  updateStats();
+}
+function catalogSectionHTML(cat,rows){
+ const groups=new Map();
+ for(const r of rows){const g=r.sheet_name||'Разное';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(r)}
+ let html='<section class="section" id="sec-'+cat.slug+'"><div class="sectionhead"><div class="title"><h2>'+esc(cat.name)+'</h2></div><div class="sectionline"></div></div><div class="hint" style="margin:12px 0">Источник: импортированная таблица Excel · '+rows.length+' записей</div>';
+ for(const [group,items] of groups){
+  html+='<div class="subsection"><div class="subhead"><span style="font-size:19px;color:#fff">●</span><h3>'+esc(group)+'</h3><span>'+items.length+' поз.</span></div><div class="tableWrap"><table class="templateTable"><thead><tr><th>Наименование</th><th>Лист</th><th>Строка</th></tr></thead><tbody>';
+  html+=items.map(x=>'<tr><td>'+esc(x.item_name)+'</td><td>'+esc(x.sheet_name)+'</td><td>'+x.source_row+'</td></tr>').join('');
+  html+='</tbody></table></div></div>';
+ }
+ return html+'</section>';
 }
 function categorySubcategories(slug){return subcategories.filter(s=>s.category===slug).sort((a,b)=>(a.sort_order-b.sort_order)||(a.id-b.id));}function sectionHTML(cat,items){
  if(cat.slug==='codes')return codesSectionHTML(cat,items);
