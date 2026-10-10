@@ -322,7 +322,7 @@ const ITEM_NOUN_GENDERS={
 function inflectItemTitle(title){
  const clean=String(title||'Название вещи').trim();
  if(!clean)return 'название вещи';
- const match=clean.match(/^(\\S+)([\\s\\S]*)$/u);
+ const match=clean.match(/^(\S+)([\s\S]*)$/u);
  if(!match)return clean.toLocaleLowerCase('ru-RU');
  const first=match[1],rest=match[2]||'';
  const key=first.toLocaleLowerCase('ru-RU').replace(/[.,:;!?]+$/u,'');
@@ -333,7 +333,7 @@ function inflectItemTitle(title){
 }
 function displayItemTitle(title){
  const clean=String(title||'Без названия').trim();
- const match=clean.match(/^(\\S+)([\\s\\S]*)$/u);
+ const match=clean.match(/^(\S+)([\s\S]*)$/u);
  if(!match)return clean;
  const first=match[1],key=first.toLocaleLowerCase('ru-RU').replace(/[.,:;!?]+$/u,'');
  return (ITEM_NOUN_FORMS[key]?key:first.toLocaleLowerCase('ru-RU'))+(match[2]||'');
