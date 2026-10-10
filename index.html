@@ -122,7 +122,7 @@ body.customTheme{background:var(--user-bg,#030507)!important;color:var(--user-te
 <div class="actions"><button type="button" class="danger" id="deleteBtn" onclick="deleteTemplate()" style="display:none;margin-right:auto">Удалить</button><button type="button" class="cancel" onclick="closeModal('editOverlay')">Отмена</button><button class="save">Сохранить</button></div>
 </form></div></div>
 
-<div class="overlay" id="subsectionOverlay"><div class="modal loginbox"><div class="modalhead"><h3 id="subModalTitle">Новое подразделение</h3><button class="x" onclick="closeModal('subsectionOverlay')">×</button></div><form class="form" onsubmit="saveSubsection(event)"><div class="field"><label>Раздел</label><select id="subCategory"></select></div><div class="field"><label>Название подраздела</label><input id="subName" required maxlength="100"><input type="hidden" id="subEditId"></div><div id="subError" class="error"></div><div class="actions"><button type="button" class="cancel" onclick="closeModal('subsectionOverlay')">Отмена</button><button class="save">Создать</button></div></form></div></div>
+<div class="overlay" id="subsectionOverlay"><div class="modal loginbox"><div class="modalhead"><h3 id="subModalTitle">Новое подразделение</h3><button class="x" onclick="closeModal('subsectionOverlay')">×</button></div><form class="form" onsubmit="saveSubsection(event)"><div class="field"><label>Раздел</label><select id="subCategory"></select><div class="hint" id="subCategoryHint"></div></div><div class="field"><label>Название подраздела</label><input id="subName" required maxlength="100"><input type="hidden" id="subEditId"></div><div id="subError" class="error"></div><div class="actions"><button type="button" class="cancel" onclick="closeModal('subsectionOverlay')">Отмена</button><button class="save" id="subSaveButton">Создать</button></div></form></div></div>
 <div class="overlay" id="staffOverlay"><div class="modal"><div class="modalhead"><h3>Администраторы и доступ</h3><button class="x" onclick="closeModal('staffOverlay')">×</button></div><div class="form">
 <div id="staffList" class="stafflist"><div class="empty">Загрузка...</div></div>
 <div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="save" type="button" onclick="openStaffForm()">＋ Добавить администратора</button></div>
@@ -675,6 +675,8 @@ window.openSubsectionForm=()=>{
  if(!canEditUI())return;
  editingSubcategoryId=null;
  document.getElementById('subModalTitle').textContent='Новое подразделение';
+ document.getElementById('subSaveButton').textContent='Создать';
+ document.getElementById('subCategoryHint').textContent='Выберите раздел для нового подразделения.';
  document.getElementById('subCategory').innerHTML=CATEGORIES.map(x=>'<option value="'+x.slug+'">'+esc(x.name)+'</option>').join('');
  document.getElementById('subCategory').value=activeCategory;
  document.getElementById('subCategory').disabled=false;
@@ -707,6 +709,8 @@ window.openSubsectionEdit=(id)=>{
  if(!sub)return;
  editingSubcategoryId=sub.id;
  document.getElementById('subModalTitle').textContent='Редактировать подразделение';
+ document.getElementById('subSaveButton').textContent='Сохранить изменения';
+ document.getElementById('subCategoryHint').textContent='Раздел нельзя изменить здесь. Можно переименовать подразделение.';
  document.getElementById('subCategory').innerHTML=CATEGORIES.map(x=>'<option value="'+x.slug+'">'+esc(x.name)+'</option>').join('');
  document.getElementById('subCategory').value=sub.category;
  document.getElementById('subCategory').disabled=true;
@@ -721,7 +725,7 @@ window.saveSubsection=async ev=>{
  const cat=document.getElementById('subCategory').value;
  const name=document.getElementById('subName').value.trim();
  if(!name){err.textContent='Введите название подраздела';return}
- const id=editingSubcategoryId||null;
+ const id=editingSubcategoryId||document.getElementById('subEditId').value||null;
  const sort=id?(subcategories.find(x=>String(x.id)===String(id))?.sort_order||0):(categorySubcategories(cat).length+1);
  const {error}=await sb.rpc('editor_save_subcategory',{p_subcategory_id:id,p_category:cat,p_name:name,p_sort_order:sort});
  if(error){err.textContent=error.message;return}
