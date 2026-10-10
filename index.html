@@ -311,6 +311,14 @@ const ITEM_NOUN_FORMS={
  'автомобиль':'автомобиль','машина':'машину','мотоцикл':'мотоцикл','велосипед':'велосипед',
  'лодка':'лодку','транспорт':'транспорт','предмет':'предмет'
 };
+const ITEM_NOUN_GENDERS={
+ 'маска':'f','сумка':'f','куртка':'f','кофта':'f','рубашка':'f','майка':'f','футболка':'f',
+ 'толстовка':'f','шапка':'f','кепка':'f','шляпа':'f','бандана':'f','перчатка':'f','варежка':'f',
+ 'обувь':'f','одежда':'f','машина':'f','лодка':'f','жилетка':'f',
+ 'очки':'plural','брюки':'plural','штаны':'plural','джинсы':'plural','шорты':'plural',
+ 'кроссовки':'plural','ботинки':'plural','кеды':'plural','туфли':'plural','сапоги':'plural',
+ 'сандалии':'plural','сланцы':'plural','часы':'plural','серьги':'plural','серёжки':'plural','сережки':'plural'
+};
 function inflectItemTitle(title){
  const clean=String(title||'Название вещи').trim();
  if(!clean)return 'название вещи';
@@ -320,8 +328,15 @@ function inflectItemTitle(title){
  const key=first.toLocaleLowerCase('ru-RU').replace(/[.,:;!?]+$/u,'');
  const form=ITEM_NOUN_FORMS[key];
  if(form)return form+rest;
- // Сохраняем регистр собственного названия, но тип вещи пишем со строчной.
- return first.toLocaleLowerCase('ru-RU')+rest;
+ // Неизвестное название не трогаем целиком: сохраняем регистр бренда и модели.
+ return first+rest;
+}
+function displayItemTitle(title){
+ const clean=String(title||'Без названия').trim();
+ const match=clean.match(/^(\\S+)([\\s\\S]*)$/u);
+ if(!match)return clean;
+ const first=match[1],key=first.toLocaleLowerCase('ru-RU').replace(/[.,:;!?]+$/u,'');
+ return (ITEM_NOUN_FORMS[key]?key:first.toLocaleLowerCase('ru-RU'))+(match[2]||'');
 }
 function isItemTemplate(t){return !!t&&t.category!=='codes'}
 function itemVariantText(t,variant,other){
@@ -680,7 +695,7 @@ function templateTable(list,cat){
    return html+'</div>';
  }
  if(!list.length)return '<div class="table"><div class="empty">Пока нет шаблонов</div></div>';
- return '<div class="simpleTemplates">'+list.map(t=>{const pref=getItemPreference(t.id),variant=ITEM_VARIANTS.some(x=>x.value===pref.variant)?pref.variant:'buy',other=String(pref.other||'');return '<div class="simpleTemplate itemTemplate" id="row-'+t.id+'"><div class="itemTemplateContent"><button type="button" class="itemName" title="Нажмите, чтобы скопировать название" onclick="copyItemName('+t.id+')">'+esc(t.title||t.body||'Без названия')+'</button><div class="itemVariantControls"><select class="itemVariantSelect" aria-label="Вариант объявления" onchange="changeItemVariant('+t.id+')"><option value="buy" '+(variant==='buy'?'selected':'')+'>Куплю</option><option value="sell" '+(variant==='sell'?'selected':'')+'>Продам</option><option value="exchange" '+(variant==='exchange'?'selected':'')+'>Обменяю</option></select><input class="itemExchangeName" aria-label="Название вещи для обмена" placeholder="Название вещи для обмена" value="'+esc(other)+'" style="display:'+(variant==='exchange'?'':'none')+'" oninput="changeItemVariant('+t.id+')"></div><div class="simpleBody" title="Нажмите, чтобы скопировать шаблон" onclick="copyBody('+t.id+')">'+esc(itemVariantText(t,variant,other))+'</div></div>'+(canEditUI()?'<div class="simpleActions"><button class="editTemplateBtn" onclick="openEdit('+t.id+')">✎ Изменить</button></div>':'')+'</div>'}).join('')+'</div>';
+ return '<div class="simpleTemplates">'+list.map(t=>{const pref=getItemPreference(t.id),variant=ITEM_VARIANTS.some(x=>x.value===pref.variant)?pref.variant:'buy',other=String(pref.other||'');return '<div class="simpleTemplate itemTemplate" id="row-'+t.id+'"><div class="itemTemplateContent"><button type="button" class="itemName" title="Нажмите, чтобы скопировать название" onclick="copyItemName('+t.id+')">'+esc(displayItemTitle(t.title||t.body||'Без названия'))+'</button><div class="itemVariantControls"><select class="itemVariantSelect" aria-label="Вариант объявления" onchange="changeItemVariant('+t.id+')"><option value="buy" '+(variant==='buy'?'selected':'')+'>Куплю</option><option value="sell" '+(variant==='sell'?'selected':'')+'>Продам</option><option value="exchange" '+(variant==='exchange'?'selected':'')+'>Обменяю</option></select><input class="itemExchangeName" aria-label="Название вещи для обмена" placeholder="Название вещи для обмена" value="'+esc(other)+'" style="display:'+(variant==='exchange'?'':'none')+'" oninput="changeItemVariant('+t.id+')"></div><div class="simpleBody" title="Нажмите, чтобы скопировать шаблон" onclick="copyBody('+t.id+')">'+esc(itemVariantText(t,variant,other))+'</div></div>'+(canEditUI()?'<div class="simpleActions"><button class="editTemplateBtn" onclick="openEdit('+t.id+')">✎ Изменить</button></div>':'')+'</div>'}).join('')+'</div>';
 }
 
 window.openNew=(cat,group='Разное')=>{
