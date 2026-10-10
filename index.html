@@ -970,10 +970,10 @@ window.importSourceWorkbook=async()=>{
      const isHeader=ri<2;
      for(let ci=0;ci<values.length;ci++){
       const v=values[ci];if(v===null||typeof v!=='string')continue;
-      const name=v.replace(/\\s+/g,' ').trim();
+      const name=v.replace(/\s+/g,' ').trim();
       if(name.length<2||name.length>180)continue;
       if(isHeader&&(/^[А-ЯA-Z0-9\s—/-]{1,28}$/.test(name)||name.includes('👜')||name.includes('МАСКИ')))continue;
-      if(/^(куплю|продам|обменяю|срок|шаблон|кодовое|связь|лицензия)\\b/i.test(name))continue;
+      if(/^(куплю|продам|обменяю|срок|шаблон|кодовое|связь|лицензия)\b/i.test(name))continue;
       const category=sheetName==='Транспорт'?'Транспорт':sheetName==='Сумки и рюкзаки'?'Сумки и рюкзаки':sheetName==='Одежда'?'Одежда':sheetName==='Маски'?'Маски':sheetName==='Рыбалка'?'Рыбалка / Охота':sheetName==='Secret Shop'?'Secret Shop':'Разное';
       catalogRecords.push({sheet_name:sheetName,category,item_name:name,source_row:ri+1,source_column:ci+1});
      }
