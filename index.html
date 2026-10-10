@@ -710,10 +710,10 @@ window.openSubsectionEdit=(id)=>{
  editingSubcategoryId=sub.id;
  document.getElementById('subModalTitle').textContent='Редактировать подразделение';
  document.getElementById('subSaveButton').textContent='Сохранить изменения';
- document.getElementById('subCategoryHint').textContent='Раздел нельзя изменить здесь. Можно переименовать подразделение.';
+ document.getElementById('subCategoryHint').textContent='Можно изменить название или перенести подраздел вместе со всеми шаблонами в другой раздел.';
  document.getElementById('subCategory').innerHTML=CATEGORIES.map(x=>'<option value="'+x.slug+'">'+esc(x.name)+'</option>').join('');
  document.getElementById('subCategory').value=sub.category;
- document.getElementById('subCategory').disabled=true;
+ document.getElementById('subCategory').disabled=false;
  document.getElementById('subName').value=sub.name||'';
  document.getElementById('subEditId').value=sub.id;
  document.getElementById('subError').textContent='';
@@ -726,7 +726,8 @@ window.saveSubsection=async ev=>{
  const name=document.getElementById('subName').value.trim();
  if(!name){err.textContent='Введите название подраздела';return}
  const id=editingSubcategoryId||document.getElementById('subEditId').value||null;
- const sort=id?(subcategories.find(x=>String(x.id)===String(id))?.sort_order||0):(categorySubcategories(cat).length+1);
+ const oldSub=id?subcategories.find(x=>String(x.id)===String(id)):null;
+ const sort=oldSub&&oldSub.category===cat?(oldSub.sort_order||0):(categorySubcategories(cat).length+1);
  const {error}=await sb.rpc('editor_save_subcategory',{p_subcategory_id:id,p_category:cat,p_name:name,p_sort_order:sort});
  if(error){err.textContent=error.message;return}
  closeModal('subsectionOverlay');await load();toast(id?'Подраздел изменён':'Подраздел добавлен');
